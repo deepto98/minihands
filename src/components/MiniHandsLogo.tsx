@@ -7,9 +7,9 @@ interface MiniHandsLogoProps {
 
 export function MiniHandsLogo({ size = "md", className = "" }: MiniHandsLogoProps) {
   const heights = {
-    sm: "h-6",
-    md: "h-8",
-    lg: "h-12 md:h-14",
+    sm: "h-12",
+    md: "h-16",
+    lg: "h-24 md:h-28",
   };
 
   return (
