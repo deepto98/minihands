@@ -102,8 +102,8 @@ function Hero() {
           </div>
 
           {/* Right: Large Logo — hidden on mobile, shown above instead */}
-          <div className="hidden md:flex flex-shrink-0 items-center justify-center w-[310px]">
-            <img src={minihandsVert} alt="MiniHands" className="w-full max-w-[264px] h-auto object-contain" />
+          <div className="hidden md:flex flex-shrink-0 items-center justify-center w-[380px] -ml-10">
+            <img src={minihandsVert} alt="MiniHands" className="w-full max-w-[340px] h-auto object-contain" />
           </div>
         </div>
       </div>
