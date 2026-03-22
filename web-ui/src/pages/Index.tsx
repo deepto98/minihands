@@ -1,35 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare, Maximize2, Minimize2 } from "lucide-react";
 import faviconImg from "/favicon.png";
-
-const chatMessages = [
-  { role: "user", text: "Deploy the frontend to production." },
-  { role: "agent", text: "Understood. I will cd into the project directory, run the build step, and deploy via Vercel CLI. Here is my plan:\n\n1. cd ~/projects/minihands-web\n2. npm run build\n3. vercel --prod\n\nProceeding now..." },
-  { role: "user", text: "Also run the database migration before deploying." },
-  { role: "agent", text: "Adding migration step. I'll run npx prisma migrate deploy before the build. Executing now..." },
-];
-
-const terminalLines = [
-  { text: "$ cd ~/projects/minihands-web", color: "text-zinc-400" },
-  { text: "$ npx prisma migrate deploy", color: "text-cyan-400" },
-  { text: "Prisma schema loaded from prisma/schema.prisma", color: "text-zinc-500" },
-  { text: 'Datasource "db": PostgreSQL database', color: "text-zinc-500" },
-  { text: "1 migration applied successfully.", color: "text-emerald-400" },
-  { text: "", color: "" },
-  { text: "$ npm run build", color: "text-cyan-400" },
-  { text: "> minihands-web@1.0.0 build", color: "text-zinc-500" },
-  { text: "> vite build", color: "text-zinc-500" },
-  { text: "", color: "" },
-  { text: "vite v5.4.19 building for production...", color: "text-zinc-300" },
-  { text: "✓ 187 modules transformed.", color: "text-emerald-400" },
-  { text: "dist/assets/index-Da3x.css  24.18 kB │ gzip: 5.12 kB", color: "text-zinc-400" },
-  { text: "dist/assets/index-K9x2.js  186.42 kB │ gzip: 61.33 kB", color: "text-zinc-400" },
-  { text: "✓ built in 2.84s", color: "text-emerald-400" },
-  { text: "", color: "" },
-  { text: "$ vercel --prod", color: "text-cyan-400" },
-  { text: "⚠ warn: Some assets exceed 500kB threshold", color: "text-amber-400" },
-  { text: "✅ Production: https://minihands.vercel.app [4s]", color: "text-emerald-400" },
-];
+import { useNavigate } from "react-router-dom";
+import { WebRTCClient } from "../lib/webrtc";
 
 type MobileTab = "chat" | "screen" | "terminal";
 type FocusPanel = "chat" | "screen" | "terminal" | null;
@@ -84,9 +57,61 @@ function FocusBar({ focusPanel, setFocusPanel }: { focusPanel: FocusPanel; setFo
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [input, setInput] = useState("");
   const [mobileTab, setMobileTab] = useState<MobileTab>("chat");
   const [focusPanel, setFocusPanel] = useState<FocusPanel>(null);
+  
+  // Live State
+  const [chatMessages, setChatMessages] = useState<{ role: string, text: string }[]>([]);
+  const [terminalLines, setTerminalLines] = useState<{ text: string, color?: string }[]>([]);
+  const [screenUrl, setScreenUrl] = useState<string | null>(null);
+  const [status, setStatus] = useState("Connecting...");
+
+  useEffect(() => {
+    const client = WebRTCClient.instance;
+    if (!client.pin) {
+      navigate('/pairing');
+      return;
+    }
+
+    client.onStatusChange = setStatus;
+    
+    client.onChat = (msg) => {
+      setChatMessages(prev => [...prev, { role: msg.role, text: msg.text }]);
+    };
+    
+    client.onTerminal = (log) => {
+      setTerminalLines(prev => [...prev, ...log.split('\n').map(l => ({ text: l, color: "text-zinc-300" }))]);
+    };
+    
+    client.onScreenFrame = (buffer) => {
+      const blob = new Blob([buffer], { type: 'image/jpeg' });
+      const url = URL.createObjectURL(blob);
+      setScreenUrl(prev => {
+        if (prev) URL.revokeObjectURL(prev);
+        return url;
+      });
+    };
+
+    return () => {
+      client.onChat = null;
+      client.onTerminal = null;
+      client.onScreenFrame = null;
+      client.onStatusChange = null;
+    };
+  }, [navigate]);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    setChatMessages(prev => [...prev, { role: "user", text: input }]);
+    WebRTCClient.instance.sendCommand(input);
+    setInput("");
+  };
+
+  const handleEmergencyStop = () => {
+    WebRTCClient.instance.sendCommand("EMERGENCY_STOP");
+  };
 
   const showChat = !focusPanel || focusPanel === "chat";
   const showScreen = !focusPanel || focusPanel === "screen";
@@ -106,11 +131,11 @@ export default function Dashboard() {
               WebkitMask: "radial-gradient(circle, black 60%, transparent 100%)",
             }}
           />
-          <span className="text-muted-foreground hidden sm:inline">Task:</span>
-          <span className="text-foreground font-medium truncate text-xs md:text-sm">migrating database & deploying frontend</span>
-          <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] md:text-xs bg-success/10 text-success font-medium shrink-0">running</span>
+          <span className="text-muted-foreground hidden sm:inline">Status:</span>
+          <span className="text-foreground font-medium truncate text-xs md:text-sm">{status}</span>
+          <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] md:text-xs bg-success/10 text-success font-medium shrink-0">active</span>
         </div>
-        <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-sm font-semibold bg-destructive text-destructive-foreground hover:opacity-90 transition-all duration-200 active:scale-95 uppercase tracking-wider shrink-0">
+        <button onClick={handleEmergencyStop} className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-sm font-semibold bg-destructive text-destructive-foreground hover:opacity-90 transition-all duration-200 active:scale-95 uppercase tracking-wider shrink-0">
           <Octagon className="h-3.5 w-3.5 md:h-4 md:w-4" />
           <span className="hidden sm:inline">Emergency</span> Stop
         </button>
@@ -148,8 +173,8 @@ export default function Dashboard() {
               </div>
               <PanelMaxBtn panel="chat" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
             </div>
-            <ChatPane />
-            <ChatInput input={input} setInput={setInput} />
+            <ChatPane messages={chatMessages} />
+            <ChatInput input={input} setInput={setInput} onSend={handleSend} />
           </div>
         )}
 
@@ -165,7 +190,7 @@ export default function Dashboard() {
                   </div>
                   <PanelMaxBtn panel="screen" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <LiveScreen full />
+                <LiveScreen url={screenUrl} full />
               </div>
             )}
             {showTerminal && (
@@ -177,7 +202,7 @@ export default function Dashboard() {
                   </div>
                   <PanelMaxBtn panel="terminal" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <TerminalPane full />
+                <TerminalPane lines={terminalLines} full />
               </div>
             )}
           </div>
@@ -188,21 +213,21 @@ export default function Dashboard() {
       <div className="flex md:hidden flex-1 min-h-0 flex-col">
         {mobileTab === "chat" && (
           <>
-            <ChatPane />
-            <ChatInput input={input} setInput={setInput} />
+            <ChatPane messages={chatMessages} />
+            <ChatInput input={input} setInput={setInput} onSend={handleSend} />
           </>
         )}
-        {mobileTab === "screen" && <LiveScreen full />}
-        {mobileTab === "terminal" && <TerminalPane full />}
+        {mobileTab === "screen" && <LiveScreen url={screenUrl} full />}
+        {mobileTab === "terminal" && <TerminalPane lines={terminalLines} full />}
       </div>
     </div>
   );
 }
 
-function ChatPane() {
+function ChatPane({ messages }: { messages: { role: string, text: string }[] }) {
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-3 md:space-y-4 terminal-scrollbar bg-background">
-      {chatMessages.map((msg, i) => (
+      {messages.map((msg, i) => (
         <div key={i} className={`flex gap-2.5 md:gap-3 ${msg.role === "user" ? "justify-end" : ""}`}>
           {msg.role === "agent" && (
             <div className="shrink-0 w-6 h-6 md:w-7 md:h-7 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
@@ -227,13 +252,19 @@ function ChatPane() {
   );
 }
 
-function ChatInput({ input, setInput }: { input: string; setInput: (v: string) => void }) {
+function ChatInput({ input, setInput, onSend }: { input: string; setInput: (v: string) => void; onSend: () => void }) {
   return (
     <div className="p-3 md:p-4 border-t border-border bg-card">
       <div className="rounded-xl border border-border bg-background p-2.5 md:p-3 shadow-soft">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              onSend();
+            }
+          }}
           placeholder="Send a command to MiniHands..."
           rows={2}
           className="w-full bg-transparent text-xs md:text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none"
@@ -242,7 +273,7 @@ function ChatInput({ input, setInput }: { input: string; setInput: (v: string) =
           <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200 active:scale-95">
             <Paperclip className="h-4 w-4" />
           </button>
-          <button className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all duration-200 active:scale-95">
+          <button onClick={onSend} className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 transition-all duration-200 active:scale-95">
             <Send className="h-3.5 w-3.5" />
             Send
           </button>
@@ -252,30 +283,33 @@ function ChatInput({ input, setInput }: { input: string; setInput: (v: string) =
   );
 }
 
-function LiveScreen({ full }: { full?: boolean }) {
+function LiveScreen({ url, full }: { url: string | null; full?: boolean }) {
   return (
-    <div className={`relative ${full ? "flex-1" : "h-1/2"} border-b border-border bg-muted group`}>
+    <div className={`relative flex items-center justify-center ${full ? "flex-1" : "h-1/2"} border-b border-border bg-muted group overflow-hidden`}>
       <div className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage: `linear-gradient(hsl(var(--foreground) / 0.15) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.15) 1px, transparent 1px)`,
           backgroundSize: "40px 40px",
         }}
       />
-      <div className="absolute top-3 left-3 md:left-4 flex items-center gap-2">
+      {url ? (
+        <img src={url} className="max-w-full max-h-full object-contain relative z-10" />
+      ) : (
+        <span className="text-muted-foreground text-sm font-medium z-10 bg-card px-4 py-2 rounded-lg shadow-sm border border-border">Waiting for screen feed...</span>
+      )}
+      
+      <div className="absolute top-3 left-3 md:left-4 z-20 flex items-center gap-2 bg-card/80 px-2 py-1 rounded-md backdrop-blur-sm border border-border/50">
         <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-[10px] md:text-xs font-mono text-muted-foreground">LIVE FEED</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
-      </div>
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-card/70 backdrop-blur-sm cursor-pointer">
-        <span className="text-xs md:text-sm font-medium text-foreground px-3 md:px-4 py-2 rounded-lg bg-card shadow-card border border-border">AnyDesk Mode: Click to interact</span>
+        {url && <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />}
       </div>
     </div>
   );
 }
 
-function TerminalPane({ full }: { full?: boolean }) {
+function TerminalPane({ lines, full }: { lines: { text: string, color?: string }[]; full?: boolean }) {
   return (
-    <div className={`${full ? "flex-1" : "h-1/2"} overflow-y-auto p-3 md:p-4 terminal-scrollbar`} style={{ background: "hsl(var(--terminal-bg))" }}>
+    <div className={`${full ? "flex-1" : "h-1/2"} overflow-y-auto overflow-x-hidden break-words p-3 md:p-4 terminal-scrollbar`} style={{ background: "hsl(var(--terminal-bg))" }}>
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-400/70" />
         <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-amber-400/70" />
@@ -283,8 +317,8 @@ function TerminalPane({ full }: { full?: boolean }) {
         <span className="text-[10px] md:text-xs font-mono text-zinc-500 ml-2">daemon@local — bash</span>
       </div>
       <div className="space-y-0.5">
-        {terminalLines.map((line, i) => (
-          <div key={i} className={`text-[10px] md:text-xs font-mono ${line.color || "text-zinc-300"} leading-5`}>
+        {lines.map((line, i) => (
+          <div key={i} className={`text-[10px] md:text-xs font-mono ${line.color || "text-zinc-300"} leading-5 whitespace-pre-wrap`}>
             {line.text || "\u00A0"}
           </div>
         ))}

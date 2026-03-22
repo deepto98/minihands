@@ -3,18 +3,22 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { MiniHandsLogo } from "@/components/MiniHandsLogo";
+import { useNavigate } from "react-router-dom";
+import { WebRTCClient } from "../lib/webrtc";
 
 const Pairing = () => {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
     if (pin.length < 6) {
       setError(true);
       return;
     }
-    // TODO: actual pairing logic
     setError(false);
+    WebRTCClient.instance.connect(pin);
+    navigate('/dashboard');
   };
 
   return (
