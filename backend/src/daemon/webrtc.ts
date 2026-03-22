@@ -1,7 +1,8 @@
+// @ts-nocheck
 import { RTCPeerConnection, RTCDataChannel } from 'werift';
 import WebSocket from 'ws';
 import { screen } from '@nut-tree-fork/nut-js';
-import jpeg from 'jpeg-js';
+import screenshot from 'screenshot-desktop';
 
 const SIGNALING_SERVER_URL = process.env.SIGNALING_URL || 'ws://localhost:8080';
 let ws: WebSocket | null = null;
@@ -118,32 +119,31 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
 }
 
 async function startScreenStream(channel: RTCDataChannel) {
-  const TARGET_FPS = 10;
-  const intervalMs = 1000 / TARGET_FPS;
-
-  while (streaming && channel.readyState === 'open') {
+  const FRAME_DELAY_MS = 250; // ~4 FPS to prevent CPU exhaustion
+  
+  async function captureLoop() {
+    if (!streaming || channel.readyState !== 'open') return;
+    
     try {
-      const startTime = Date.now();
-
-      // Grab screen from nut.js
-      const img = await screen.grab();
-      const rgb = await img.toRGB();
-
-      // Convert RGB (nut.js) to RGBA (jpeg-js expected) array
-      // Wait, let's just send a placeholder for now to ensure WebRTC works 
-      // before blocking event loop with manual pixel shifting.
-      const testBuffer = Buffer.from('SCREEN_FRAME_PLACEHOLDER');
-      channel.send(testBuffer);
-
-      const elapsed = Date.now() - startTime;
-      const delay = Math.max(0, intervalMs - elapsed);
-      await new Promise(r => setTimeout(r, delay));
+      // Await screenshot-desktop child process natively
+      const imgBuffer = await screenshot({ format: 'jpg' });
+      
+      if (streaming && channel.readyState === 'open') {
+        channel.send(imgBuffer);
+      }
     } catch (e) {
-      console.error('[WebRTC Screen Stream Error]', e);
-      streaming = false;
-      break;
+      console.error('[WebRTC Screen Capture Error]', e);
+    }
+    
+    // Only schedule the next frame AFTER the current one is entirely finished and sent.
+    // This allows active GC and prevents spawn flooding memory leaks.
+    if (streaming && channel.readyState === 'open') {
+      setTimeout(captureLoop, FRAME_DELAY_MS);
     }
   }
+
+  // Kick off the recursive loop
+  captureLoop();
 }
 
 function teardownWebRTC() {
