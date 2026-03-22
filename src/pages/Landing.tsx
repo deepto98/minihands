@@ -58,49 +58,46 @@ function Hero() {
         }}
       />
       <div className="max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-12 md:pb-20">
-        <div className="flex flex-col items-start max-w-2xl">
-          {/* Logo + Name */}
-          <MiniHandsLogo size="lg" className="mb-6 md:mb-8" />
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-16">
+          {/* Left: Text */}
+          <div className="flex-1 flex flex-col items-start">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
+              Your computer,{" "}
+              <span className="text-primary">on autopilot.</span>
+            </h1>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
-            Your computer,{" "}
-            <span className="text-primary">on autopilot.</span>
-          </h1>
+            <p className="mt-4 md:mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
+              MiniHands is an open-source AI agent that lives on your machine. 
+              It sees your screen, types on your keyboard, and executes shell commands — 
+              controlled remotely from any device via WebRTC.
+            </p>
 
-          {/* Eyebrow */}
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-200 mt-5 md:mt-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" />
-            Now open source — Star on GitHub
-            <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-          </a>
+            <div className="flex flex-wrap items-center gap-3 mt-7 md:mt-8">
+              <Link to="/dashboard"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-foreground text-background hover:opacity-90 transition-all duration-200 active:scale-[0.97]">
+                Live Demo
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <a href="#install"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-border bg-card text-foreground hover:bg-accent transition-all duration-200 active:scale-[0.97]">
+                Quick Start
+              </a>
+            </div>
 
-          <p className="mt-4 md:mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
-            MiniHands is an open-source AI agent that lives on your machine. 
-            It sees your screen, types on your keyboard, and executes shell commands — 
-            controlled remotely from any device via WebRTC.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3 mt-7 md:mt-8">
-            <Link to="/dashboard"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-foreground text-background hover:opacity-90 transition-all duration-200 active:scale-[0.97]">
-              Live Demo
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <a href="#install"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border border-border bg-card text-foreground hover:bg-accent transition-all duration-200 active:scale-[0.97]">
-              Quick Start
-            </a>
+            <div className="flex items-center gap-4 mt-8 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Github className="h-3 w-3" /> 2.4k stars
+              </span>
+              <span className="w-px h-3 bg-border" />
+              <span>MIT Licensed</span>
+              <span className="w-px h-3 bg-border" />
+              <span>Works on macOS, Linux, Windows</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 mt-8 text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Github className="h-3 w-3" /> 2.4k stars
-            </span>
-            <span className="w-px h-3 bg-border" />
-            <span>MIT Licensed</span>
-            <span className="w-px h-3 bg-border" />
-            <span>Works on macOS, Linux, Windows</span>
+          {/* Right: Large Logo */}
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <MiniHandsLogo size="lg" className="!h-40 md:!h-56" />
           </div>
         </div>
       </div>
