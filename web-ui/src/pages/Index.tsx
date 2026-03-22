@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare, Maximize2, Minimize2 } from "lucide-react";
 import faviconImg from "/favicon.png";
 import { useNavigate } from "react-router-dom";
@@ -65,7 +65,6 @@ export default function Dashboard() {
   // Live State
   const [chatMessages, setChatMessages] = useState<{ role: string, text: string }[]>([]);
   const [terminalLines, setTerminalLines] = useState<{ text: string, color?: string }[]>([]);
-  const [screenUrl, setScreenUrl] = useState<string | null>(null);
   const [status, setStatus] = useState("Connecting...");
 
   useEffect(() => {
@@ -84,20 +83,10 @@ export default function Dashboard() {
     client.onTerminal = (log) => {
       setTerminalLines(prev => [...prev, ...log.split('\n').map(l => ({ text: l, color: "text-zinc-300" }))]);
     };
-    
-    client.onScreenFrame = (buffer) => {
-      const blob = new Blob([buffer], { type: 'image/jpeg' });
-      const url = URL.createObjectURL(blob);
-      setScreenUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return url;
-      });
-    };
 
     return () => {
       client.onChat = null;
       client.onTerminal = null;
-      client.onScreenFrame = null;
       client.onStatusChange = null;
     };
   }, [navigate]);
@@ -190,7 +179,7 @@ export default function Dashboard() {
                   </div>
                   <PanelMaxBtn panel="screen" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <LiveScreen url={screenUrl} full />
+                <LiveScreen client={WebRTCClient.instance} full />
               </div>
             )}
             {showTerminal && (
@@ -217,7 +206,7 @@ export default function Dashboard() {
             <ChatInput input={input} setInput={setInput} onSend={handleSend} />
           </>
         )}
-        {mobileTab === "screen" && <LiveScreen url={screenUrl} full />}
+        {mobileTab === "screen" && <LiveScreen client={WebRTCClient.instance} full />}
         {mobileTab === "terminal" && <TerminalPane lines={terminalLines} full />}
       </div>
     </div>
@@ -283,25 +272,54 @@ function ChatInput({ input, setInput, onSend }: { input: string; setInput: (v: s
   );
 }
 
-function LiveScreen({ url, full }: { url: string | null; full?: boolean }) {
-  return (
-    <div className={`relative flex items-center justify-center ${full ? "flex-1" : "h-1/2"} border-b border-border bg-muted group overflow-hidden`}>
-      <div className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `linear-gradient(hsl(var(--foreground) / 0.15) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground) / 0.15) 1px, transparent 1px)`,
-          backgroundSize: "40px 40px",
-        }}
-      />
-      {url ? (
-        <img src={url} className="max-w-full max-h-full object-contain relative z-10" />
-      ) : (
-        <span className="text-muted-foreground text-sm font-medium z-10 bg-card px-4 py-2 rounded-lg shadow-sm border border-border">Waiting for screen feed...</span>
-      )}
+function LiveScreen({ client, full }: { client: WebRTCClient, full?: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameId = useRef<number>();
+  const lastObjectUrl = useRef<string | null>(null);
+
+  useEffect(() => {
+    client.onScreenFrame = (buffer) => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
+
+      const blob = new Blob([buffer], { type: 'image/jpeg' });
       
+      if (lastObjectUrl.current) {
+        URL.revokeObjectURL(lastObjectUrl.current);
+      }
+      
+      const url = URL.createObjectURL(blob);
+      lastObjectUrl.current = url;
+
+      const img = new Image();
+      img.onload = () => {
+        animationFrameId.current = requestAnimationFrame(() => {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        });
+      };
+      img.src = url;
+    };
+
+    return () => {
+      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      if (lastObjectUrl.current) URL.revokeObjectURL(lastObjectUrl.current);
+      client.onScreenFrame = null;
+    };
+  }, [client]);
+
+  return (
+    <div className={`relative flex items-center justify-center ${full ? "flex-1" : "h-1/2"} bg-black border-b border-border group overflow-hidden`}>
+      <canvas 
+        ref={canvasRef} 
+        width={1920} 
+        height={1080} 
+        className="w-full h-full object-contain relative z-10"
+      />
       <div className="absolute top-3 left-3 md:left-4 z-20 flex items-center gap-2 bg-card/80 px-2 py-1 rounded-md backdrop-blur-sm border border-border/50">
         <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-[10px] md:text-xs font-mono text-muted-foreground">LIVE FEED</span>
-        {url && <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />}
+        <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
       </div>
     </div>
   );
