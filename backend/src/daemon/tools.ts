@@ -5,6 +5,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import { mouse, keyboard, screen, Point, straightTo, Button, Key } from '@nut-tree-fork/nut-js';
 
 const execAsync = promisify(exec);
 
@@ -52,6 +53,84 @@ export const systemTools = {
         return { success: true };
       } catch (error: any) {
         return { error: error.message, success: false };
+      }
+    },
+  }),
+  mouseMove: tool({
+    description: 'Move the mouse to absolute screen coordinates (x, y). Use getScreenDimensions first if you do not know the screen size.',
+    parameters: z.object({
+      x: z.number().describe('The X coordinate'),
+      y: z.number().describe('The Y coordinate'),
+    }),
+    execute: async ({ x, y }) => {
+      try {
+        await mouse.move(straightTo(new Point(x, y)));
+        return { success: true, message: `Mouse moved to ${x}, ${y}` };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
+    },
+  }),
+  mouseClick: tool({
+    description: 'Click the mouse at its current location.',
+    parameters: z.object({
+      button: z.enum(['left', 'right', 'middle']).describe('Which button to click (default left)'),
+      doubleClick: z.boolean().optional().describe('Whether to perform a double click'),
+    }),
+    execute: async ({ button, doubleClick }) => {
+      try {
+        const btn = button === 'right' ? Button.RIGHT : button === 'middle' ? Button.MIDDLE : Button.LEFT;
+        if (doubleClick) {
+          await mouse.doubleClick(btn);
+        } else {
+          await mouse.click(btn);
+        }
+        return { success: true, message: `Clicked ${button} button` };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
+    },
+  }),
+  keyboardType: tool({
+    description: 'Type a string of text using the keyboard. Good for typing into focused inputs.',
+    parameters: z.object({
+      textToType: z.string().describe('The string of text to type'),
+    }),
+    execute: async ({ textToType }) => {
+      try {
+        await keyboard.type(textToType);
+        return { success: true, message: `Typed text` };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
+    },
+  }),
+  keyboardPress: tool({
+    description: 'Press a special key (e.g. ENTER, ESCAPE, TAB, BACKSPACE, SPACE).',
+    parameters: z.object({
+      keyName: z.enum(['ENTER', 'ESCAPE', 'TAB', 'BACKSPACE', 'SPACE']).describe('The key to press'),
+    }),
+    execute: async ({ keyName }) => {
+      try {
+        const key = Key[keyName as keyof typeof Key];
+        await keyboard.pressKey(key);
+        await keyboard.releaseKey(key);
+        return { success: true, message: `Pressed ${keyName}` };
+      } catch (error: any) {
+        return { success: false, error: error.message };
+      }
+    },
+  }),
+  getScreenDimensions: tool({
+    description: 'Get the main screen dimensions (width and height).',
+    parameters: z.object({}),
+    execute: async () => {
+      try {
+        const width = await screen.width();
+        const height = await screen.height();
+        return { success: true, width, height };
+      } catch (error: any) {
+        return { success: false, error: error.message };
       }
     },
   }),
