@@ -16,7 +16,7 @@ export function AppSidebar() {
     <aside className="flex flex-col w-56 min-h-screen border-r border-border bg-sidebar shrink-0">
       {/* Logo */}
       <div className="flex items-center px-5 py-5 border-b border-border">
-        <MiniHandsLogo size="sm" className="[&_img]:rounded-lg [&_img]:[mask:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%),linear-gradient(to_bottom,transparent_0%,black_4%,black_96%,transparent_100%)] [&_img]:[mask-composite:intersect] [&_img]:[-webkit-mask:linear-gradient(to_right,transparent_0%,black_4%,black_96%,transparent_100%),linear-gradient(to_bottom,transparent_0%,black_4%,black_96%,transparent_100%)] [&_img]:[-webkit-mask-composite:destination-in]" />
+        <MiniHandsLogo size="sm" />
       </div>
 
       {/* Status */}
