@@ -73,7 +73,7 @@ export class WebRTCClient {
     const answer = await this.rtc.createAnswer();
     await this.rtc.setLocalDescription(answer);
 
-    this.ws?.send(JSON.stringify({ type: 'answer', sdp: answer }));
+    this.ws?.send(JSON.stringify({ type: 'answer', sdp: answer.sdp }));
   }
 
   sendCommand(command: string) {
