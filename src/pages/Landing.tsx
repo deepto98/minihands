@@ -1,7 +1,6 @@
 import { ArrowRight, Github, Terminal, Monitor, Shield, Zap, ChevronRight, ExternalLink, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "@/assets/minihands-logo.png";
 import { MiniHandsLogo } from "@/components/MiniHandsLogo";
 
 export default function Landing() {
@@ -24,8 +23,7 @@ function Nav() {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <img src={logo} alt="MiniHands" className="w-7 h-7 rounded-lg" />
-          <span className="text-sm font-semibold tracking-tight">MiniHands</span>
+          <MiniHandsLogo size="sm" />
           <span className="hidden sm:inline-flex ml-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
             v0.3.0-beta
           </span>
@@ -61,21 +59,21 @@ function Hero() {
       />
       <div className="max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-12 md:pb-20">
         <div className="flex flex-col items-start max-w-2xl">
-          {/* Eyebrow */}
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-200 mb-8 md:mb-10">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" />
-            Now open source — Star on GitHub
-            <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-          </a>
+          {/* Logo + Name */}
+          <MiniHandsLogo size="lg" className="mb-6 md:mb-8" />
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
             Your computer,{" "}
             <span className="text-primary">on autopilot.</span>
           </h1>
 
-          {/* Logo + Name */}
-          <MiniHandsLogo size="lg" className="mt-6 md:mt-8" />
+          {/* Eyebrow */}
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer"
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-200 mt-5 md:mt-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-success" />
+            Now open source — Star on GitHub
+            <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+          </a>
 
           <p className="mt-4 md:mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
             MiniHands is an open-source AI agent that lives on your machine. 
@@ -269,8 +267,8 @@ function Footer() {
     <footer className="border-t border-border bg-card">
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <img src={logo} alt="MiniHands" className="w-5 h-5 rounded" />
-          MiniHands — MIT License
+          <MiniHandsLogo size="sm" />
+          <span className="mx-1">—</span> MIT License
         </div>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <a href="https://github.com" className="hover:text-foreground transition-colors">GitHub</a>
