@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import HistoryPage from "./pages/History";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Pairing from "./pages/Pairing";
+import ConnectionStatus from "./pages/ConnectionStatus";
 
 const queryClient = new QueryClient();
 
