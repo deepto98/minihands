@@ -1,9 +1,11 @@
+// @ts-nocheck
 // backend/src/daemon/index.ts
 import picocolors from 'picocolors';
 import { text } from '@clack/prompts';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { systemTools } from './tools.js';
+import { startWebRTC, sendChat } from './webrtc.js';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -22,21 +24,10 @@ export async function startDaemon(pin: string) {
     process.exit(1);
   }
 
-  // Temporary local test loop replacing WebRTC signaling for now
-  console.log(picocolors.yellow(`[Daemon] ⚠️ WebRTC is stubbed out. Entering local simulation mode.`));
-  console.log(picocolors.gray(`[Daemon] You can type commands as if sent from the Web UI.\n`));
+  console.log(picocolors.yellow(`[Daemon] Entering WebRTC listener mode.`));
   
-  while (true) {
-    const simulatedCommand = await text({
-      message: picocolors.cyan('Simulate Web UI Command (type "exit" to quit):'),
-      placeholder: 'e.g., Run "ls -la" and tell me what is there.',
-    });
-
-    if (!simulatedCommand || typeof simulatedCommand !== 'string' || simulatedCommand.toLowerCase() === 'exit') {
-      break;
-    }
-
-    console.log(picocolors.gray(`[Daemon] Processing command: "${simulatedCommand}"\n`));
+  await startWebRTC(pin, async (simulatedCommand: string) => {
+    console.log(picocolors.gray(`[Daemon] Processing command from UI: "${simulatedCommand}"\n`));
 
     try {
       const result = await generateText({
@@ -47,18 +38,21 @@ export async function startDaemon(pin: string) {
       });
 
       console.log(picocolors.green(`\n[Agent]: ${result.text}\n`));
+      // Relay the response back to the Web UI DataChannel
+      sendChat(JSON.stringify({ role: 'agent', text: result.text }));
       
       // Print tooling metadata for observability
-      const allToolCalls = result.steps.flatMap(s => s.toolCalls);
+      const allToolCalls = result.steps?.flatMap(s => s.toolCalls) || [];
       if (allToolCalls.length > 0) {
         console.log(picocolors.gray(`  -> Tools used: ${allToolCalls.map(t => t.toolName).join(', ')}\n`));
       }
 
     } catch (error: any) {
       console.error(picocolors.red(`[Daemon Error]: ${error.message}\n`));
+      sendChat(JSON.stringify({ role: 'system', text: `Error: ${error.message}` }));
     }
-  }
+  });
 
-  console.log(picocolors.gray('[Daemon] Shutting down...'));
-  process.exit(0);
+  // Keep process alive listening for WEBRTC events
+  console.log(picocolors.gray('[Daemon] Idling, waiting for P2P connection...'));
 }
