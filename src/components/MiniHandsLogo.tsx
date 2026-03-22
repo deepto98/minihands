@@ -17,7 +17,7 @@ export function MiniHandsLogo({ size = "md", className = "" }: MiniHandsLogoProp
       <img
         src={wordmark}
         alt="MiniHands"
-        className="h-full w-auto rounded-lg"
+        className="h-full w-auto rounded-lg shadow-[0_2px_12px_-2px_hsl(var(--foreground)/0.08)]"
         style={{
           mask: "linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%), linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)",
           maskComposite: "intersect",
