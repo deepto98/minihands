@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare } from "lucide-react";
+import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare, Maximize2, Minimize2 } from "lucide-react";
 import faviconImg from "/favicon.png";
 
 const chatMessages = [
@@ -13,7 +13,7 @@ const terminalLines = [
   { text: "$ cd ~/projects/minihands-web", color: "text-zinc-400" },
   { text: "$ npx prisma migrate deploy", color: "text-cyan-400" },
   { text: "Prisma schema loaded from prisma/schema.prisma", color: "text-zinc-500" },
-  { text: "Datasource \"db\": PostgreSQL database", color: "text-zinc-500" },
+  { text: 'Datasource "db": PostgreSQL database', color: "text-zinc-500" },
   { text: "1 migration applied successfully.", color: "text-emerald-400" },
   { text: "", color: "" },
   { text: "$ npm run build", color: "text-cyan-400" },
@@ -32,10 +32,65 @@ const terminalLines = [
 ];
 
 type MobileTab = "chat" | "screen" | "terminal";
+type FocusPanel = "chat" | "screen" | "terminal" | null;
+
+const panelMeta = [
+  { key: "chat" as const, label: "Chat", icon: MessageSquare },
+  { key: "screen" as const, label: "Screen", icon: ScreenShare },
+  { key: "terminal" as const, label: "Terminal", icon: Terminal },
+];
+
+function PanelMaxBtn({ panel, focusPanel, setFocusPanel }: { panel: FocusPanel; focusPanel: FocusPanel; setFocusPanel: (v: FocusPanel) => void }) {
+  const isMaximized = focusPanel === panel;
+  return (
+    <button
+      onClick={() => setFocusPanel(isMaximized ? null : panel)}
+      className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 active:scale-90"
+      title={isMaximized ? "Restore" : "Maximize"}
+    >
+      {isMaximized ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+function FocusBar({ focusPanel, setFocusPanel }: { focusPanel: FocusPanel; setFocusPanel: (v: FocusPanel) => void }) {
+  if (!focusPanel) return null;
+  return (
+    <div className="hidden md:flex items-center gap-1 border-b border-border bg-card/80 backdrop-blur-sm px-4 py-1.5 shrink-0">
+      {panelMeta.map(({ key, label, icon: Icon }) => (
+        <button
+          key={key}
+          onClick={() => setFocusPanel(key)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+            focusPanel === key
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          }`}
+        >
+          <Icon className="h-3.5 w-3.5" />
+          {label}
+        </button>
+      ))}
+      <div className="flex-1" />
+      <button
+        onClick={() => setFocusPanel(null)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+      >
+        <Minimize2 className="h-3.5 w-3.5" />
+        Split View
+      </button>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [input, setInput] = useState("");
   const [mobileTab, setMobileTab] = useState<MobileTab>("chat");
+  const [focusPanel, setFocusPanel] = useState<FocusPanel>(null);
+
+  const showChat = !focusPanel || focusPanel === "chat";
+  const showScreen = !focusPanel || focusPanel === "screen";
+  const showTerminal = !focusPanel || focusPanel === "terminal";
 
   return (
     <div className="flex flex-col h-screen">
@@ -61,13 +116,12 @@ export default function Dashboard() {
         </button>
       </header>
 
+      {/* Desktop Focus Bar (visible when a panel is maximized) */}
+      <FocusBar focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
+
       {/* Mobile Tab Switcher */}
       <div className="flex md:hidden border-b border-border bg-card shrink-0">
-        {([
-          { key: "chat", label: "Chat", icon: MessageSquare },
-          { key: "screen", label: "Screen", icon: ScreenShare },
-          { key: "terminal", label: "Terminal", icon: Terminal },
-        ] as const).map(({ key, label, icon: Icon }) => (
+        {panelMeta.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setMobileTab(key)}
@@ -83,19 +137,51 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Desktop: Split Panes */}
+      {/* Desktop: Split Panes (or focused single pane) */}
       <div className="hidden md:flex flex-1 min-h-0">
-        {/* Left Pane - Agent Interface */}
-        <div className="flex flex-col w-1/2 border-r border-border">
-          <ChatPane />
-          <ChatInput input={input} setInput={setInput} />
-        </div>
+        {showChat && (
+          <div className={`flex flex-col border-r border-border transition-all duration-300 ${focusPanel === "chat" ? "w-full" : "w-1/2"}`}>
+            <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Chat
+              </div>
+              <PanelMaxBtn panel="chat" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
+            </div>
+            <ChatPane />
+            <ChatInput input={input} setInput={setInput} />
+          </div>
+        )}
 
-        {/* Right Pane - Machine Interface */}
-        <div className="flex flex-col w-1/2">
-          <LiveScreen />
-          <TerminalPane />
-        </div>
+        {(showScreen || showTerminal) && (
+          <div className={`flex flex-col transition-all duration-300 ${focusPanel && focusPanel !== "chat" ? "w-full" : "w-1/2"}`}>
+            {showScreen && (
+              <div className={`flex flex-col ${showTerminal && !focusPanel ? "h-1/2" : "flex-1"} ${showTerminal ? "border-b border-border" : ""}`}>
+                <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <ScreenShare className="h-3.5 w-3.5" />
+                    Live Feed
+                    <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot ml-1" />
+                  </div>
+                  <PanelMaxBtn panel="screen" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
+                </div>
+                <LiveScreen full={focusPanel === "screen"} />
+              </div>
+            )}
+            {showTerminal && (
+              <div className={`flex flex-col ${showScreen && !focusPanel ? "h-1/2" : "flex-1"}`}>
+                <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <Terminal className="h-3.5 w-3.5" />
+                    Terminal
+                  </div>
+                  <PanelMaxBtn panel="terminal" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
+                </div>
+                <TerminalPane full={focusPanel === "terminal"} />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mobile: Tabbed Content */}
