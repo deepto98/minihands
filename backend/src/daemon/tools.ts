@@ -1,4 +1,3 @@
-// @ts-nocheck
 // backend/src/daemon/tools.ts
 import { tool } from 'ai';
 import { z } from 'zod';
@@ -23,13 +22,13 @@ export const systemTools = {
       // Permission Interceptor / Watchdog
       const dangerousPatterns = ['rm ', 'sudo ', 'npm publish', 'mkfs', 'dd ', 'mv ', 'format'];
       const isDangerous = dangerousPatterns.some(p => command.toLowerCase().includes(p));
-      
+
       if (isDangerous) {
         console.log(''); // Newline for visual separation
         const allowed = await confirm({
           message: picocolors.red(`🚨 [Watchdog] Agent wants to execute high-risk command:\n"${command}"\nAllow?`),
         });
-        
+
         if (!allowed || isCancel(allowed)) {
           console.log(picocolors.yellow('[Watchdog] Command blocked. Notifying agent...'));
           return { success: false, error: 'User denied permission to run this command. Find an alternative approach or ask for clarification.' };
@@ -96,7 +95,7 @@ export const systemTools = {
       button: z.enum(['left', 'right', 'middle']).describe('Which button to click (default left)'),
       doubleClick: z.boolean().describe('Whether to perform a double click (usually false)'),
     }),
-    execute: async ({ button, doubleClick }: { button: 'left'|'right'|'middle'; doubleClick: boolean }): Promise<any> => {
+    execute: async ({ button, doubleClick }: { button: 'left' | 'right' | 'middle'; doubleClick: boolean }): Promise<any> => {
       try {
         const btn = button === 'right' ? Button.RIGHT : button === 'middle' ? Button.MIDDLE : Button.LEFT;
         if (doubleClick) {
@@ -129,7 +128,7 @@ export const systemTools = {
     parameters: z.object({
       keyName: z.enum(['ENTER', 'ESCAPE', 'TAB', 'BACKSPACE', 'SPACE']).describe('The key to press'),
     }),
-    execute: async ({ keyName }: { keyName: 'ENTER'|'ESCAPE'|'TAB'|'BACKSPACE'|'SPACE' }): Promise<any> => {
+    execute: async ({ keyName }: { keyName: 'ENTER' | 'ESCAPE' | 'TAB' | 'BACKSPACE' | 'SPACE' }): Promise<any> => {
       try {
         const key = Key[keyName as keyof typeof Key];
         await keyboard.pressKey(key);

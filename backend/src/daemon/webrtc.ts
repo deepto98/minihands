@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { RTCPeerConnection, RTCDataChannel } from 'werift';
 import WebSocket from 'ws';
 import { screen } from '@nut-tree-fork/nut-js';
@@ -37,7 +36,7 @@ export async function startWebRTC(pin: string, onCommandReceived: (cmd: string) 
 
   ws.on('message', async (data) => {
     const msg = JSON.parse(data.toString());
-    
+
     if (msg.type === 'peer_connected') {
       console.log('[WebRTC] UI Connected. Initializing WebRTC Offer...');
       await setupWebRTCAndInitiateOffer(pin, onCommandReceived);
@@ -55,7 +54,7 @@ export async function startWebRTC(pin: string, onCommandReceived: (cmd: string) 
       teardownWebRTC();
     }
   });
-  
+
   ws.on('close', () => {
     console.log('[WebRTC] Signaling server disconnected.');
     teardownWebRTC();
@@ -74,7 +73,7 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
   screenFeedChannel = rtc.createDataChannel('screen_feed');
 
   // Set up listeners for control channel
-  controlChannel.message.subscribe((msg) => {
+  controlChannel.onMessage.subscribe((msg) => {
     const text = msg.toString();
     console.log('[WebRTC Control]', text);
     try {
@@ -83,7 +82,7 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
         onCommandReceived(payload.command);
       }
       // Add emergency stop, mouse coords handlers later
-    } catch(e) { /* ignore raw strings */ }
+    } catch (e) { /* ignore raw strings */ }
   });
 
   rtc.connectionStateChange.subscribe((state) => {
@@ -121,21 +120,21 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
 async function startScreenStream(channel: RTCDataChannel) {
   const TARGET_FPS = 10;
   const intervalMs = 1000 / TARGET_FPS;
-  
+
   while (streaming && channel.readyState === 'open') {
     try {
       const startTime = Date.now();
-      
+
       // Grab screen from nut.js
       const img = await screen.grab();
       const rgb = await img.toRGB();
-      
+
       // Convert RGB (nut.js) to RGBA (jpeg-js expected) array
       // Wait, let's just send a placeholder for now to ensure WebRTC works 
       // before blocking event loop with manual pixel shifting.
       const testBuffer = Buffer.from('SCREEN_FRAME_PLACEHOLDER');
       channel.send(testBuffer);
-      
+
       const elapsed = Date.now() - startTime;
       const delay = Math.max(0, intervalMs - elapsed);
       await new Promise(r => setTimeout(r, delay));

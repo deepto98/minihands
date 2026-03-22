@@ -1,4 +1,3 @@
-// @ts-nocheck
 // backend/src/daemon/index.ts
 import picocolors from 'picocolors';
 import { text } from '@clack/prompts';
@@ -18,14 +17,14 @@ dotenv.config();
  */
 export async function startDaemon(pin: string) {
   console.log(picocolors.gray(`\n[Daemon] Starting background process... (PIN: ${pin})`));
-  
+
   if (!process.env.OPENAI_API_KEY) {
     console.error(picocolors.red('[Daemon] ERROR: OPENAI_API_KEY is not set in .env'));
     process.exit(1);
   }
 
   console.log(picocolors.yellow(`[Daemon] Entering WebRTC listener mode.`));
-  
+
   await startWebRTC(pin, async (simulatedCommand: string) => {
     console.log(picocolors.gray(`[Daemon] Processing command from UI: "${simulatedCommand}"\n`));
 
@@ -40,7 +39,7 @@ export async function startDaemon(pin: string) {
       console.log(picocolors.green(`\n[Agent]: ${result.text}\n`));
       // Relay the response back to the Web UI DataChannel
       sendChat(JSON.stringify({ role: 'agent', text: result.text }));
-      
+
       // Print tooling metadata for observability
       const allToolCalls = result.steps?.flatMap(s => s.toolCalls) || [];
       if (allToolCalls.length > 0) {
