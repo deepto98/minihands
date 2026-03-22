@@ -2,7 +2,7 @@ import { ArrowRight, Github, Terminal, Monitor, Shield, Zap, ChevronRight, Exter
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/minihands-logo.png";
-import logoName from "@/assets/minihands-name.png";
+import { MiniHandsLogo } from "@/components/MiniHandsLogo";
 
 export default function Landing() {
   return (
@@ -70,7 +70,7 @@ function Hero() {
           </a>
 
           {/* Logo + Name */}
-          <img src={logoName} alt="MiniHands" className="h-10 sm:h-12 md:h-14 w-auto mb-5 md:mb-6" />
+          <MiniHandsLogo size="lg" className="mb-5 md:mb-6" />
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
             Your computer,{" "}
