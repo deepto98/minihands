@@ -2,6 +2,7 @@ import { ArrowRight, Github, Terminal, Monitor, Shield, Zap, ChevronRight, Exter
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { MiniHandsLogo } from "@/components/MiniHandsLogo";
+import minihandsVert from "@/assets/minihands-vert.png";
 
 export default function Landing() {
   return (
@@ -95,9 +96,9 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right: Large Logo */}
-          <div className="flex-shrink-0 flex flex-col items-center">
-            <MiniHandsLogo size="lg" className="!h-40 md:!h-56" />
+          {/* Right: Large Logo — hidden on mobile to prevent layout break */}
+          <div className="hidden md:flex flex-shrink-0 items-center justify-center w-[280px]">
+            <img src={minihandsVert} alt="MiniHands" className="w-full max-w-[240px] h-auto object-contain" />
           </div>
         </div>
       </div>
