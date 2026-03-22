@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logo from "@/assets/minihands-logo.png";
+import { MiniHandsLogo } from "@/components/MiniHandsLogo";
 
 type ConnectionState = "connecting" | "lost";
 
@@ -36,8 +36,8 @@ const ConnectionStatus = ({ state: initialState = "connecting" }: ConnectionStat
       <div className="flex w-full max-w-xs flex-col items-center gap-6 text-center">
         {state === "connecting" ? (
           <>
-            <div className="relative flex h-14 w-14 items-center justify-center">
-              <img src={logo} alt="MiniHands" className="h-14 w-14 rounded-xl opacity-80" />
+            <div className="relative flex items-center justify-center">
+              <MiniHandsLogo size="md" />
               <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-primary animate-spin" />
             </div>
             <div className="flex flex-col gap-1.5">

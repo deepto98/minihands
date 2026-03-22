@@ -2,7 +2,7 @@ import { useState } from "react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import logo from "@/assets/minihands-logo.png";
+import { MiniHandsLogo } from "@/components/MiniHandsLogo";
 
 const Pairing = () => {
   const [pin, setPin] = useState("");
@@ -21,7 +21,7 @@ const Pairing = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
         {/* Logo */}
-        <img src={logo} alt="MiniHands" className="h-16 w-16 rounded-2xl" />
+        <MiniHandsLogo size="md" />
 
         {/* Text */}
         <div className="flex flex-col items-center gap-2 text-center">
