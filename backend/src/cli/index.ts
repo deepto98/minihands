@@ -1,6 +1,8 @@
-// src/cli/index.ts
+// backend/src/cli/index.ts
 import { intro, outro, text, confirm, spinner, isCancel, cancel } from '@clack/prompts';
 import picocolors from 'picocolors';
+import fs from 'fs';
+import path from 'path';
 import { startDaemon } from '../daemon/index.js';
 
 /**
@@ -22,6 +24,10 @@ export async function runInitPrompt() {
     cancel('Setup cancelled.');
     process.exit(0);
   }
+  
+  // Save API key securely
+  const envPath = path.resolve(process.cwd(), '.env');
+  fs.writeFileSync(envPath, `OPENAI_API_KEY=${apiKey}\n`);
 
   // Prompt for deployment
   const shouldDeploy = await confirm({
@@ -49,6 +55,6 @@ export async function runInitPrompt() {
 
   outro("Setup complete! Starting local daemon...");
 
-  // Hand off to the daemon process
-  startDaemon(pin);
+  // Hand off to the daemon process (now async, so we await)
+  await startDaemon(pin);
 }
