@@ -15,17 +15,24 @@ export function AppSidebar() {
     <aside className="flex flex-col w-56 min-h-screen border-r border-border bg-sidebar shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-border">
-        <span className="text-lg font-semibold tracking-tight text-foreground">
+        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary">
+          <span className="text-xs font-bold text-primary-foreground">M</span>
+        </div>
+        <span className="text-base font-semibold tracking-tight text-foreground">
           MiniHands
-        </span>
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="w-2 h-2 rounded-full bg-success pulse-dot" />
-          Connected
         </span>
       </div>
 
+      {/* Status */}
+      <div className="px-5 py-3 border-b border-border">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="w-2 h-2 rounded-full bg-success pulse-dot" />
+          Daemon Connected
+        </div>
+      </div>
+
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map((item) => {
           const active = item.url === "/"
             ? location.pathname === "/"
@@ -35,10 +42,10 @@ export function AppSidebar() {
               key={item.url}
               to={item.url}
               end={item.url === "/"}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                 active
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
+                  ? "bg-primary/8 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
               activeClassName=""
             >
@@ -52,7 +59,7 @@ export function AppSidebar() {
       {/* User */}
       <div className="px-3 py-4 border-t border-border">
         <div className="flex items-center gap-3 px-3 py-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent">
             <User className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex flex-col">
