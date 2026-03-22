@@ -35,6 +35,8 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/pairing" element={<Pairing />} />
+                <Route path="/connection" element={<ConnectionStatus />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
