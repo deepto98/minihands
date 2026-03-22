@@ -63,19 +63,19 @@ function Hero() {
         <div className="flex flex-col items-start max-w-2xl">
           {/* Eyebrow */}
           <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-200 mb-6">
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs text-muted-foreground hover:border-primary/30 hover:text-foreground transition-all duration-200 mb-8 md:mb-10">
             <span className="w-1.5 h-1.5 rounded-full bg-success" />
             Now open source — Star on GitHub
             <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
           </a>
 
-          {/* Logo + Name */}
-          <MiniHandsLogo size="lg" className="mb-5 md:mb-6" />
-
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
             Your computer,{" "}
             <span className="text-primary">on autopilot.</span>
           </h1>
+
+          {/* Logo + Name */}
+          <MiniHandsLogo size="lg" className="mt-6 md:mt-8" />
 
           <p className="mt-4 md:mt-5 text-base md:text-lg text-muted-foreground leading-relaxed max-w-lg">
             MiniHands is an open-source AI agent that lives on your machine. 
