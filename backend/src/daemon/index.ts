@@ -5,6 +5,7 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { systemTools } from './tools.js';
 import { startWebRTC, sendChat } from './webrtc.js';
+import { checkOSDependencies } from './osHandler.js';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -22,6 +23,8 @@ export async function startDaemon(pin: string) {
     console.error(picocolors.red('[Daemon] ERROR: OPENAI_API_KEY is not set in .env'));
     process.exit(1);
   }
+
+  await checkOSDependencies();
 
   console.log(picocolors.yellow(`[Daemon] Entering WebRTC listener mode.`));
 
