@@ -58,7 +58,7 @@ function Hero() {
           background: `radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.06) 0%, transparent 70%)`
         }}
       />
-      <div className="max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-12 md:pb-20">
+      <div className="max-w-6xl mx-auto px-4 pt-16 md:pt-24 pb-12 md:pb-20">
         <div className="flex flex-col md:flex-row items-center gap-8 md:gap-0">
           {/* Mobile: Logo above text */}
           <div className="flex md:hidden items-center justify-center w-full">
@@ -66,9 +66,10 @@ function Hero() {
           </div>
 
           {/* Left: Text — 50% */}
-          <div className="w-full md:w-1/2 flex flex-col items-start">
+          <div className="w-full md:w-1/2 flex flex-col items-start md:pr-8">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
-              Your computer,{" "}
+              Your computer,
+              <br />
               <span className="text-primary">on autopilot.</span>
             </h1>
 
@@ -103,7 +104,7 @@ function Hero() {
 
           {/* Right: Large Logo — 50%, vertically centered */}
           <div className="hidden md:flex w-1/2 items-center justify-center">
-            <img src={minihandsVert} alt="MiniHands" className="w-64 h-auto object-contain" />
+            <img src={minihandsVert} alt="MiniHands" className="w-80 h-auto object-contain" />
           </div>
         </div>
       </div>
