@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/AppSidebar";
+import { MobileNav } from "@/components/MobileNav";
 import { PermissionModal } from "@/components/PermissionModal";
 import Index from "./pages/Index";
 import HistoryPage from "./pages/History";
@@ -23,8 +24,11 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <div className="flex min-h-screen w-full bg-background">
-            <AppSidebar />
-            <main className="flex-1 min-w-0">
+            {/* Desktop sidebar */}
+            <div className="hidden md:block">
+              <AppSidebar />
+            </div>
+            <main className="flex-1 min-w-0 pb-16 md:pb-0">
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/history" element={<HistoryPage />} />
@@ -33,6 +37,8 @@ const App = () => {
               </Routes>
             </main>
           </div>
+          {/* Mobile bottom nav */}
+          <MobileNav />
           <PermissionModal open={modalOpen} onClose={() => setModalOpen(false)} />
         </BrowserRouter>
       </TooltipProvider>

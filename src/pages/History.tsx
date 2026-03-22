@@ -20,13 +20,14 @@ const statusConfig = {
 export default function HistoryPage() {
   return (
     <div className="flex flex-col h-screen">
-      <header className="px-6 py-5 border-b border-border bg-card">
-        <h1 className="text-lg font-semibold text-foreground">Session History</h1>
-        <p className="text-sm text-muted-foreground mt-1">All recorded agent sessions and their outcomes.</p>
+      <header className="px-4 md:px-6 py-4 md:py-5 border-b border-border bg-card">
+        <h1 className="text-base md:text-lg font-semibold text-foreground">Session History</h1>
+        <p className="text-xs md:text-sm text-muted-foreground mt-1">All recorded agent sessions and their outcomes.</p>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-6 bg-background">
-        <div className="border border-border rounded-xl overflow-hidden bg-card shadow-soft">
+      <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-background">
+        {/* Desktop: Table */}
+        <div className="hidden md:block border border-border rounded-xl overflow-hidden bg-card shadow-soft">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
@@ -61,6 +62,32 @@ export default function HistoryPage() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile: Cards */}
+        <div className="md:hidden space-y-2.5">
+          {sessions.map((s, i) => {
+            const cfg = statusConfig[s.status as keyof typeof statusConfig];
+            const Icon = cfg.icon;
+            return (
+              <div key={i} className="bg-card border border-border rounded-xl p-3.5 shadow-soft">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <p className="text-sm font-medium text-foreground leading-snug flex-1">{s.task}</p>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${cfg.classes}`}>
+                    <Icon className="h-2.5 w-2.5" />
+                    {cfg.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="font-mono">{s.date}</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-2.5 w-2.5" />
+                    {s.duration}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
