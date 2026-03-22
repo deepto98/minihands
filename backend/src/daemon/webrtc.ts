@@ -1,8 +1,13 @@
 // @ts-nocheck
 import { RTCPeerConnection, RTCDataChannel } from 'werift';
 import WebSocket from 'ws';
-import { screen } from '@nut-tree-fork/nut-js';
 import screenshot from 'screenshot-desktop';
+import os from 'os';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { readFile, unlink } from 'fs/promises';
+
+const execAsync = promisify(exec);
 
 const SIGNALING_SERVER_URL = process.env.SIGNALING_URL || 'ws://localhost:8080';
 let ws: WebSocket | null = null;
@@ -125,8 +130,20 @@ async function startScreenStream(channel: RTCDataChannel) {
     if (!streaming || channel.readyState !== 'open') return;
     
     try {
-      // Await screenshot-desktop child process natively
-      const imgBuffer = await screenshot({ format: 'jpg' });
+      let imgBuffer: Buffer;
+      if (os.platform() === 'linux') {
+        // Bypass screenshot-desktop's broken ImageMagick 'import' fallback
+        // Force 'scrot' to write directly to Linux RAM disk for maximum speed
+        const tmpPath = `/dev/shm/minihands_frame_${Date.now()}.jpg`;
+        await execAsync(`scrot -z -q 70 ${tmpPath}`);
+        imgBuffer = await readFile(tmpPath);
+        // Fire-and-forget unlink to immediately delete the frame from RAM
+        unlink(tmpPath).catch(() => {});
+      } else {
+        // macOS and Windows fallback
+        const result = await screenshot({ format: 'jpg' });
+        imgBuffer = Buffer.isBuffer(result) ? result : Buffer.from(result as any);
+      }
       
       if (streaming && channel.readyState === 'open') {
         channel.send(imgBuffer);
