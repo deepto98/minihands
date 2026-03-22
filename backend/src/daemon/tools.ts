@@ -7,6 +7,8 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { mouse, keyboard, screen, Point, straightTo, Button, Key } from '@nut-tree-fork/nut-js';
+import { confirm, isCancel } from '@clack/prompts';
+import picocolors from 'picocolors';
 
 const execAsync = promisify(exec);
 
@@ -18,6 +20,22 @@ export const systemTools = {
       cwd: z.string().optional().describe('The current working directory (optional)'),
     }),
     execute: async ({ command, cwd }: { command: string; cwd?: string }): Promise<any> => {
+      // Permission Interceptor / Watchdog
+      const dangerousPatterns = ['rm ', 'sudo ', 'npm publish', 'mkfs', 'dd ', 'mv ', 'format'];
+      const isDangerous = dangerousPatterns.some(p => command.toLowerCase().includes(p));
+      
+      if (isDangerous) {
+        console.log(''); // Newline for visual separation
+        const allowed = await confirm({
+          message: picocolors.red(`🚨 [Watchdog] Agent wants to execute high-risk command:\n"${command}"\nAllow?`),
+        });
+        
+        if (!allowed || isCancel(allowed)) {
+          console.log(picocolors.yellow('[Watchdog] Command blocked. Notifying agent...'));
+          return { success: false, error: 'User denied permission to run this command. Find an alternative approach or ask for clarification.' };
+        }
+      }
+
       try {
         const { stdout, stderr } = await execAsync(command, { cwd });
         return { stdout, stderr, success: true };
