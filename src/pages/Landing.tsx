@@ -1,6 +1,8 @@
 import { ArrowRight, Github, Terminal, Monitor, Shield, Zap, ChevronRight, ExternalLink, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import logo from "@/assets/minihands-logo.png";
+import logoName from "@/assets/minihands-name.png";
 
 export default function Landing() {
   return (
@@ -22,9 +24,7 @@ function Nav() {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary">
-            <span className="text-xs font-bold text-primary-foreground">M</span>
-          </div>
+          <img src={logo} alt="MiniHands" className="w-7 h-7 rounded-lg" />
           <span className="text-sm font-semibold tracking-tight">MiniHands</span>
           <span className="hidden sm:inline-flex ml-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
             v0.3.0-beta
@@ -54,7 +54,6 @@ function Nav() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Subtle warm gradient wash */}
       <div className="absolute inset-0 pointer-events-none"
         style={{
           background: `radial-gradient(ellipse 80% 60% at 50% 0%, hsl(var(--primary) / 0.06) 0%, transparent 70%)`
@@ -69,6 +68,9 @@ function Hero() {
             Now open source — Star on GitHub
             <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
           </a>
+
+          {/* Logo + Name */}
+          <img src={logoName} alt="MiniHands" className="h-10 sm:h-12 md:h-14 w-auto mb-5 md:mb-6" />
 
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
             Your computer,{" "}
@@ -93,7 +95,6 @@ function Hero() {
             </a>
           </div>
 
-          {/* Social proof line */}
           <div className="flex items-center gap-4 mt-8 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Github className="h-3 w-3" /> 2.4k stars
@@ -145,26 +146,10 @@ function InstallBlock() {
 
 function Features() {
   const items = [
-    {
-      icon: Monitor,
-      title: "Screen Streaming",
-      desc: "WebRTC-powered live feed of your desktop. Sub-100ms latency, no port forwarding required.",
-    },
-    {
-      icon: Terminal,
-      title: "Shell Execution",
-      desc: "Full terminal access with streaming output. Run builds, deployments, and scripts remotely.",
-    },
-    {
-      icon: Shield,
-      title: "Permission Gating",
-      desc: "Destructive commands require explicit approval. rm, drop, format — nothing runs without your OK.",
-    },
-    {
-      icon: Zap,
-      title: "Local-First",
-      desc: "The daemon runs entirely on your machine. No cloud middleman. Your data never leaves your network.",
-    },
+    { icon: Monitor, title: "Screen Streaming", desc: "WebRTC-powered live feed of your desktop. Sub-100ms latency, no port forwarding required." },
+    { icon: Terminal, title: "Shell Execution", desc: "Full terminal access with streaming output. Run builds, deployments, and scripts remotely." },
+    { icon: Shield, title: "Permission Gating", desc: "Destructive commands require explicit approval. rm, drop, format — nothing runs without your OK." },
+    { icon: Zap, title: "Local-First", desc: "The daemon runs entirely on your machine. No cloud middleman. Your data never leaves your network." },
   ];
 
   return (
@@ -284,9 +269,7 @@ function Footer() {
     <footer className="border-t border-border bg-card">
       <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
-            <span className="text-[8px] font-bold text-primary-foreground">M</span>
-          </div>
+          <img src={logo} alt="MiniHands" className="w-5 h-5 rounded" />
           MiniHands — MIT License
         </div>
         <div className="flex items-center gap-4 text-xs text-muted-foreground">

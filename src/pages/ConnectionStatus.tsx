@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, WifiOff, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/minihands-logo.png";
 
 type ConnectionState = "connecting" | "lost";
 

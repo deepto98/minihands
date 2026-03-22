@@ -1,6 +1,7 @@
 import { LayoutDashboard, History, Settings, User } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import logo from "@/assets/minihands-logo.png";
 
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -15,9 +16,7 @@ export function AppSidebar() {
     <aside className="flex flex-col w-56 min-h-screen border-r border-border bg-sidebar shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-border">
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary">
-          <span className="text-xs font-bold text-primary-foreground">M</span>
-        </div>
+        <img src={logo} alt="MiniHands" className="w-7 h-7 rounded-lg" />
         <span className="text-base font-semibold tracking-tight text-foreground">
           MiniHands
         </span>
