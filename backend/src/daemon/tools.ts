@@ -17,9 +17,9 @@ export const systemTools = {
     description: 'Execute a bash command on the local terminal. Returns stdout and stderr.',
     parameters: z.object({
       command: z.string().describe('The bash command to execute'),
-      cwd: z.string().optional().describe('The current working directory (optional)'),
+      cwd: z.string().describe('The current working directory (pass "." if standard)'),
     }),
-    execute: async ({ command, cwd }: { command: string; cwd?: string }): Promise<any> => {
+    execute: async ({ command, cwd }: { command: string; cwd: string }): Promise<any> => {
       // Permission Interceptor / Watchdog
       const dangerousPatterns = ['rm ', 'sudo ', 'npm publish', 'mkfs', 'dd ', 'mv ', 'format'];
       const isDangerous = dangerousPatterns.some(p => command.toLowerCase().includes(p));
@@ -37,7 +37,7 @@ export const systemTools = {
       }
 
       try {
-        const { stdout, stderr } = await execAsync(command, { cwd });
+        const { stdout, stderr } = await execAsync(command, { cwd: cwd === '.' ? undefined : cwd });
         return { stdout, stderr, success: true };
       } catch (error: any) {
         return { stdout: error.stdout, stderr: error.stderr, error: error.message, success: false };
@@ -94,9 +94,9 @@ export const systemTools = {
     description: 'Click the mouse at its current location.',
     parameters: z.object({
       button: z.enum(['left', 'right', 'middle']).describe('Which button to click (default left)'),
-      doubleClick: z.boolean().optional().describe('Whether to perform a double click'),
+      doubleClick: z.boolean().describe('Whether to perform a double click (usually false)'),
     }),
-    execute: async ({ button, doubleClick }: { button: 'left'|'right'|'middle'; doubleClick?: boolean }): Promise<any> => {
+    execute: async ({ button, doubleClick }: { button: 'left'|'right'|'middle'; doubleClick: boolean }): Promise<any> => {
       try {
         const btn = button === 'right' ? Button.RIGHT : button === 'middle' ? Button.MIDDLE : Button.LEFT;
         if (doubleClick) {
@@ -142,7 +142,9 @@ export const systemTools = {
   }),
   getScreenDimensions: tool({
     description: 'Get the main screen dimensions (width and height).',
-    parameters: z.object({}),
+    parameters: z.object({
+      _dummy: z.boolean().describe('Pass true here. Ignored.'),
+    }),
     execute: async (): Promise<any> => {
       try {
         const width = await screen.width();
