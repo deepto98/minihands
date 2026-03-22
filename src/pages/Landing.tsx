@@ -59,7 +59,12 @@ function Hero() {
         }}
       />
       <div className="max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-12 md:pb-20">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-16">
+        {/* Mobile: Logo above headline */}
+        <div className="flex md:hidden justify-center mb-6">
+          <img src={minihandsVert} alt="MiniHands" className="h-32 w-auto object-contain" />
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center md:items-center gap-10 md:gap-16">
           {/* Left: Text */}
           <div className="flex-1 flex flex-col items-start">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.15] text-foreground">
@@ -96,9 +101,9 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right: Large Logo — hidden on mobile to prevent layout break */}
-          <div className="hidden md:flex flex-shrink-0 items-center justify-center w-[280px]">
-            <img src={minihandsVert} alt="MiniHands" className="w-full max-w-[240px] h-auto object-contain" />
+          {/* Right: Large Logo — hidden on mobile, shown above instead */}
+          <div className="hidden md:flex flex-shrink-0 items-center justify-center w-[310px]">
+            <img src={minihandsVert} alt="MiniHands" className="w-full max-w-[264px] h-auto object-contain" />
           </div>
         </div>
       </div>
