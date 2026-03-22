@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare } from "lucide-react";
+import { MiniHandsLogo } from "@/components/MiniHandsLogo";
 
 const chatMessages = [
   { role: "user", text: "Deploy the frontend to production." },
@@ -40,7 +41,10 @@ export default function Dashboard() {
     <div className="flex flex-col h-screen">
       {/* Top Header */}
       <header className="flex items-center justify-between px-3 md:px-6 py-2.5 md:py-3 border-b border-border bg-card shrink-0 gap-2">
-        <div className="flex items-center gap-2 text-sm min-w-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          <div className="md:hidden shrink-0">
+            <MiniHandsLogo size="sm" className="!h-7" />
+          </div>
           <span className="text-muted-foreground hidden sm:inline">Task:</span>
           <span className="text-foreground font-medium truncate text-xs md:text-sm">migrating database & deploying frontend</span>
           <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] md:text-xs bg-success/10 text-success font-medium shrink-0">running</span>
