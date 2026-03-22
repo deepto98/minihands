@@ -3,7 +3,7 @@ import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Session History", url: "/history", icon: History },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
@@ -34,9 +34,7 @@ export function AppSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
         {navItems.map((item) => {
-          const active = item.url === "/"
-            ? location.pathname === "/"
-            : location.pathname.startsWith(item.url);
+          const active = location.pathname === item.url || location.pathname.startsWith(item.url + "/");
           return (
             <NavLink
               key={item.url}

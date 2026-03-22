@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "History", url: "/history", icon: History },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
@@ -14,9 +14,7 @@ export function MobileNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-border bg-card/95 backdrop-blur-md px-2 py-2 safe-bottom">
       {navItems.map((item) => {
-        const active = item.url === "/"
-          ? location.pathname === "/"
-          : location.pathname.startsWith(item.url);
+        const active = location.pathname === item.url || location.pathname.startsWith(item.url + "/");
         return (
           <NavLink
             key={item.url}
