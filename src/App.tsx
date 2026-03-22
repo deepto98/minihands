@@ -11,6 +11,8 @@ import Index from "./pages/Index";
 import HistoryPage from "./pages/History";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Pairing from "./pages/Pairing";
+import ConnectionStatus from "./pages/ConnectionStatus";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/pairing" element={<Pairing />} />
+                <Route path="/connection" element={<ConnectionStatus />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
