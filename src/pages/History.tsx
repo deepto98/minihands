@@ -12,24 +12,24 @@ const sessions = [
 ];
 
 const statusConfig = {
-  success: { icon: CheckCircle2, label: "Success", classes: "bg-success/10 text-success border-success/20" },
-  failed: { icon: XCircle, label: "Failed", classes: "bg-destructive/10 text-destructive border-destructive/20" },
-  killed: { icon: Skull, label: "Killed", classes: "bg-destructive/5 text-destructive/70 border-destructive/15" },
+  success: { icon: CheckCircle2, label: "Success", classes: "bg-success/10 text-success" },
+  failed: { icon: XCircle, label: "Failed", classes: "bg-destructive/10 text-destructive" },
+  killed: { icon: Skull, label: "Killed", classes: "bg-destructive/5 text-destructive/70" },
 };
 
 export default function HistoryPage() {
   return (
     <div className="flex flex-col h-screen">
-      <header className="px-6 py-5 border-b border-border">
+      <header className="px-6 py-5 border-b border-border bg-card">
         <h1 className="text-lg font-semibold text-foreground">Session History</h1>
         <p className="text-sm text-muted-foreground mt-1">All recorded agent sessions and their outcomes.</p>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="border border-border rounded-lg overflow-hidden">
+      <div className="flex-1 overflow-y-auto p-6 bg-background">
+        <div className="border border-border rounded-xl overflow-hidden bg-card shadow-soft">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border bg-secondary/30">
+              <tr className="border-b border-border bg-muted/50">
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Task Summary</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Duration</th>
@@ -41,7 +41,7 @@ export default function HistoryPage() {
                 const cfg = statusConfig[s.status as keyof typeof statusConfig];
                 const Icon = cfg.icon;
                 return (
-                  <tr key={i} className="border-b border-border last:border-0 hover:bg-surface-hover transition-colors duration-150">
+                  <tr key={i} className="border-b border-border last:border-0 hover:bg-accent/50 transition-colors duration-150">
                     <td className="px-4 py-3 font-mono text-xs text-muted-foreground whitespace-nowrap">{s.date}</td>
                     <td className="px-4 py-3 text-foreground">{s.task}</td>
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
@@ -51,7 +51,7 @@ export default function HistoryPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${cfg.classes}`}>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.classes}`}>
                         <Icon className="h-3 w-3" />
                         {cfg.label}
                       </span>

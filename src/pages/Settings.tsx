@@ -12,7 +12,7 @@ function SettingsInput({ label, placeholder, masked = false }: { label: string; 
         <input
           type={masked && !show ? "password" : "text"}
           placeholder={placeholder}
-          className="w-full px-3 py-2 rounded-md text-sm bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-all duration-200"
+          className="w-full px-3 py-2.5 rounded-lg text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-ring transition-all duration-200"
         />
         {masked && (
           <button
@@ -39,7 +39,7 @@ function ToggleSwitch({ label, description }: { label: string; description: stri
         onClick={() => setOn(!on)}
         className={`relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 ${on ? "bg-primary" : "bg-muted"}`}
       >
-        <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-foreground transition-transform duration-200 ${on ? "translate-x-4" : ""}`} />
+        <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-card shadow-sm transition-transform duration-200 ${on ? "translate-x-4" : ""}`} />
       </button>
     </div>
   );
@@ -50,22 +50,22 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="px-6 py-5 border-b border-border">
+      <header className="px-6 py-5 border-b border-border bg-card">
         <h1 className="text-lg font-semibold text-foreground">Settings</h1>
         <p className="text-sm text-muted-foreground mt-1">Configure your MiniHands instance.</p>
       </header>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 bg-background">
         {/* Vertical Tabs */}
-        <div className="w-48 border-r border-border p-4 space-y-1 shrink-0">
+        <div className="w-48 border-r border-border p-4 space-y-0.5 shrink-0 bg-card">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200 active:scale-95 ${
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 active:scale-[0.98] ${
                 activeTab === tab
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-surface-hover"
+                  ? "bg-primary/8 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
               }`}
             >
               {tab}
@@ -74,7 +74,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 max-w-2xl">
+        <div className="flex-1 overflow-y-auto p-8 max-w-2xl">
           {activeTab === "General" && (
             <div className="space-y-6">
               <h2 className="text-base font-semibold text-foreground">General Settings</h2>
@@ -109,7 +109,7 @@ export default function SettingsPage() {
               <SettingsInput label="Daemon WebRTC PIN" placeholder="••••••" masked />
               <SettingsInput label="Daemon Host" placeholder="localhost" />
               <SettingsInput label="Daemon Port" placeholder="9090" />
-              <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10">
                 <Shield className="h-5 w-5 text-primary shrink-0" />
                 <p className="text-xs text-muted-foreground">
                   WebRTC connections are end-to-end encrypted. The PIN is used as a shared secret for DTLS handshake verification.
