@@ -154,9 +154,9 @@ export default function Dashboard() {
         )}
 
         {(showScreen || showTerminal) && (
-          <div className={`flex flex-col transition-all duration-300 ${focusPanel && focusPanel !== "chat" ? "w-full" : "w-1/2"}`}>
+          <div className={`flex flex-col min-h-0 transition-all duration-300 ${focusPanel && focusPanel !== "chat" ? "w-full" : "w-1/2"}`}>
             {showScreen && (
-              <div className={`flex flex-col ${showTerminal && !focusPanel ? "h-1/2" : "flex-1"} ${showTerminal ? "border-b border-border" : ""}`}>
+              <div className={`flex flex-col min-h-0 ${showTerminal && !focusPanel ? "flex-1 basis-1/2" : "flex-1"} ${showTerminal ? "border-b border-border" : ""}`}>
                 <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <ScreenShare className="h-3.5 w-3.5" />
@@ -165,11 +165,11 @@ export default function Dashboard() {
                   </div>
                   <PanelMaxBtn panel="screen" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <LiveScreen full={focusPanel === "screen"} />
+                <LiveScreen full />
               </div>
             )}
             {showTerminal && (
-              <div className={`flex flex-col ${showScreen && !focusPanel ? "h-1/2" : "flex-1"}`}>
+              <div className={`flex flex-col min-h-0 ${showScreen && !focusPanel ? "flex-1 basis-1/2" : "flex-1"}`}>
                 <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                     <Terminal className="h-3.5 w-3.5" />
@@ -177,7 +177,7 @@ export default function Dashboard() {
                   </div>
                   <PanelMaxBtn panel="terminal" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <TerminalPane full={focusPanel === "terminal"} />
+                <TerminalPane full />
               </div>
             )}
           </div>
