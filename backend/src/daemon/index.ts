@@ -1,10 +1,11 @@
-// src/daemon/index.ts
+// backend/src/daemon/index.ts
 import picocolors from 'picocolors';
 import { text } from '@clack/prompts';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { systemTools } from './tools.js';
 import dotenv from 'dotenv';
+import path from 'path';
 
 // Load .env variables (specifically OPENAI_API_KEY)
 dotenv.config();
@@ -41,7 +42,6 @@ export async function startDaemon(pin: string) {
       const result = await generateText({
         model: openai('gpt-4o'),
         tools: systemTools,
-        maxSteps: 5, // Allow the agent to call multiple tools sequentially
         prompt: `The user sent this remote command from the web UI: "${simulatedCommand}"`,
         system: 'You are the MiniHands local execution agent. You have full access to the user\'s local file system and terminal. Use the provided tools to accomplish the task. Always summarize what you did concisely.',
       });

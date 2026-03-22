@@ -16,7 +16,7 @@ export async function runInitPrompt() {
     message: 'Enter your OpenAI API Key (will be saved securely to .env):',
     placeholder: 'sk-proj-...',
     validate(value) {
-      if (value.length === 0) return 'API key is required!';
+      if (!value || value.length === 0) return 'API key is required!';
     },
   });
 
