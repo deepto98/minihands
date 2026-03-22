@@ -1,4 +1,5 @@
 import { CheckCircle2, XCircle, Skull, Clock } from "lucide-react";
+import faviconImg from "/favicon.png";
 
 const sessions = [
   { date: "2026-03-22 14:32", task: "Deploy frontend to production via Vercel CLI", duration: "2m 14s", status: "success" },
@@ -20,9 +21,20 @@ const statusConfig = {
 export default function HistoryPage() {
   return (
     <div className="flex flex-col h-screen">
-      <header className="px-4 md:px-6 py-4 md:py-5 border-b border-border bg-card">
-        <h1 className="text-base md:text-lg font-semibold text-foreground">Session History</h1>
-        <p className="text-xs md:text-sm text-muted-foreground mt-1">All recorded agent sessions and their outcomes.</p>
+      <header className="flex items-center gap-2 px-3 md:px-6 py-2.5 md:py-5 border-b border-border bg-card">
+        <img
+          src={faviconImg}
+          alt="MiniHands"
+          className="md:hidden shrink-0 h-8 w-8 rounded-full"
+          style={{
+            mask: "radial-gradient(circle, black 60%, transparent 100%)",
+            WebkitMask: "radial-gradient(circle, black 60%, transparent 100%)",
+          }}
+        />
+        <div>
+          <h1 className="text-sm md:text-lg font-semibold text-foreground">Session History</h1>
+          <p className="hidden md:block text-sm text-muted-foreground mt-1">All recorded agent sessions and their outcomes.</p>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-background">

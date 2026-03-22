@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Eye, EyeOff, Shield } from "lucide-react";
+import faviconImg from "/favicon.png";
 
 const tabs = ["General", "API Keys", "Local Daemon"];
 
@@ -50,9 +51,20 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="px-4 md:px-6 py-4 md:py-5 border-b border-border bg-card">
-        <h1 className="text-base md:text-lg font-semibold text-foreground">Settings</h1>
-        <p className="text-xs md:text-sm text-muted-foreground mt-1">Configure your MiniHands instance.</p>
+      <header className="flex items-center gap-2 px-3 md:px-6 py-2.5 md:py-5 border-b border-border bg-card">
+        <img
+          src={faviconImg}
+          alt="MiniHands"
+          className="md:hidden shrink-0 h-8 w-8 rounded-full"
+          style={{
+            mask: "radial-gradient(circle, black 60%, transparent 100%)",
+            WebkitMask: "radial-gradient(circle, black 60%, transparent 100%)",
+          }}
+        />
+        <div>
+          <h1 className="text-sm md:text-lg font-semibold text-foreground">Settings</h1>
+          <p className="hidden md:block text-sm text-muted-foreground mt-1">Configure your MiniHands instance.</p>
+        </div>
       </header>
 
       {/* Mobile: Horizontal Tabs */}
