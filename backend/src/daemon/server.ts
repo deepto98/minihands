@@ -20,9 +20,9 @@ export function startServer(pin: string): Promise<number> {
 
     // Serve static files from the compiled React UI
     // In dev (from src/daemon): ../../../../web-ui/dist
-    // In prod (from dist/): web-ui
+    // In prod (from dist/): ./web-ui
     const distPathDev = path.join(__dirname, '../../../../web-ui/dist');
-    const distPathProd = path.join(__dirname, '../web-ui'); // When __dirname is dist, it points to dist/web-ui
+    const distPathProd = path.join(__dirname, 'web-ui'); // __dirname in bundled prod is /dist
 
     app.use(express.static(distPathDev));
     app.use(express.static(distPathProd));
