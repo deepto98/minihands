@@ -325,15 +325,89 @@ function LiveScreen({ client, full }: { client: WebRTCClient, full?: boolean }) 
     };
   }, [client]);
 
+  const lastSend = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
+
+  const getCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const scale = Math.max(scaleX, scaleY);
+    
+    // Actual rendered dimensions of the image due to object-contain
+    const renderWidth = canvas.width / scale;
+    const renderHeight = canvas.height / scale;
+    
+    // Letterbox offsets
+    const offsetX = (rect.width - renderWidth) / 2;
+    const offsetY = (rect.height - renderHeight) / 2;
+    
+    let x = (e.clientX - rect.left - offsetX) * scale;
+    let y = (e.clientY - rect.top - offsetY) * scale;
+    
+    x = Math.max(0, Math.min(canvas.width, Math.round(x)));
+    y = Math.max(0, Math.min(canvas.height, Math.round(y)));
+    
+    return { x, y };
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const coords = getCoords(e);
+    if (!coords) return;
+    isDragging.current = true;
+    client.sendCommand(JSON.stringify({ type: 'mousedown', x: coords.x, y: coords.y, button: e.button }));
+    // Try to Focus parent to catch keystrokes
+    e.currentTarget.parentElement?.focus();
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const coords = getCoords(e);
+    if (!coords) return;
+    isDragging.current = false;
+    client.sendCommand(JSON.stringify({ type: 'mouseup', x: coords.x, y: coords.y, button: e.button }));
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (Date.now() - lastSend.current < 50) return; // ~20 FPS throttle
+    const coords = getCoords(e);
+    if (!coords) return;
+    lastSend.current = Date.now();
+    client.sendCommand(JSON.stringify({ type: 'mousemove', x: coords.x, y: coords.y }));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'F12' || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.key === 'c')) return; // Allow browser defaults
+    e.preventDefault();
+    client.sendCommand(JSON.stringify({ type: 'keydown', key: e.key, code: e.code, modifiers: { ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey, meta: e.metaKey } }));
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'F12' || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.key === 'c')) return;
+    e.preventDefault();
+    client.sendCommand(JSON.stringify({ type: 'keyup', key: e.key, code: e.code, modifiers: { ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey, meta: e.metaKey } }));
+  };
+
   return (
-    <div className={`relative flex items-center justify-center ${full ? "flex-1" : "h-1/2"} bg-black border-b border-border group overflow-hidden`}>
+    <div 
+      className={`relative flex items-center justify-center ${full ? "flex-1" : "h-1/2"} bg-black border-b border-border group overflow-hidden focus:outline-none focus:ring-1 focus:ring-primary/50`}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onKeyUp={handleKeyUp}
+    >
       <canvas 
         ref={canvasRef} 
         width={1920} 
         height={1080} 
-        className="w-full h-full object-contain relative z-10"
+        className="w-full h-full object-contain relative z-10 touch-none cursor-crosshair"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerMove={handlePointerMove}
+        onContextMenu={(e) => e.preventDefault()}
       />
-      <div className="absolute top-3 left-3 md:left-4 z-20 flex items-center gap-2 bg-card/80 px-2 py-1 rounded-md backdrop-blur-sm border border-border/50">
+      <div className="absolute top-3 left-3 md:left-4 z-20 flex items-center gap-2 bg-card/80 px-2 py-1 rounded-md backdrop-blur-sm border border-border/50 pointer-events-none">
         <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="text-[10px] md:text-xs font-mono text-muted-foreground">LIVE FEED</span>
         <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />

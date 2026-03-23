@@ -7,6 +7,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { readFile, unlink } from 'fs/promises';
 import { setControlSender, handlePermissionResponse } from './permissionBridge.js';
+import { mouse, keyboard, Point, Button, Key } from '@nut-tree-fork/nut-js';
 
 const execAsync = promisify(exec);
 
@@ -97,8 +98,20 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
         onCommandReceived(payload.command);
       } else if (payload.type === 'permission_response') {
         handlePermissionResponse(payload.id, payload.approved);
+      } else if (payload.type === 'mousemove') {
+        mouse.setPosition(new Point(payload.x, payload.y));
+      } else if (payload.type === 'mousedown') {
+        const btn = payload.button === 2 ? Button.RIGHT : payload.button === 1 ? Button.MIDDLE : Button.LEFT;
+        mouse.pressButton(btn);
+      } else if (payload.type === 'mouseup') {
+        const btn = payload.button === 2 ? Button.RIGHT : payload.button === 1 ? Button.MIDDLE : Button.LEFT;
+        mouse.releaseButton(btn);
+      } else if (payload.type === 'keydown') {
+        handleRemoteKey(payload.key, payload.code, true);
+      } else if (payload.type === 'keyup') {
+        handleRemoteKey(payload.key, payload.code, false);
       }
-      // Add emergency stop, mouse coords handlers later
+      // Add emergency stop handling later
     } catch (e) { /* ignore raw strings */ }
   });
 
@@ -184,4 +197,50 @@ function teardownWebRTC() {
   terminalChannel = null;
   chatChannel = null;
   screenFeedChannel = null;
+}
+
+// Map Web KeyboardEvent.key to nut-js Key enum
+async function handleRemoteKey(key: string, code: string, isDown: boolean) {
+  let mappedKey: Key | null = null;
+  
+  const simpleMap: Record<string, Key> = {
+    'Enter': Key.Enter,
+    'Backspace': Key.Backspace,
+    'Tab': Key.Tab,
+    'Escape': Key.Escape,
+    'Space': Key.Space,
+    'ArrowUp': Key.Up,
+    'ArrowDown': Key.Down,
+    'ArrowLeft': Key.Left,
+    'ArrowRight': Key.Right,
+    'Shift': Key.LeftShift,
+    'Control': Key.LeftControl,
+    'Alt': Key.LeftAlt,
+    'Meta': Key.LeftSuper,
+    'Delete': Key.Delete,
+  };
+
+  if (simpleMap[key]) {
+     mappedKey = simpleMap[key];
+  } else if (key.length === 1) {
+     const upper = key.toUpperCase();
+     if (upper >= 'A' && upper <= 'Z') {
+       mappedKey = Key[upper as keyof typeof Key];
+     } else if (upper >= '0' && upper <= '9') {
+       mappedKey = Key[`Num${upper}` as keyof typeof Key];
+     }
+  }
+
+  if (mappedKey !== null && mappedKey !== undefined) {
+    if (isDown) {
+      await keyboard.pressKey(mappedKey);
+    } else {
+      await keyboard.releaseKey(mappedKey);
+    }
+  } else {
+    // Fallback for symbols if it doesn't map directly to a pure scancode
+    if (isDown && key.length === 1) {
+       await keyboard.type(key);
+    }
+  }
 }
