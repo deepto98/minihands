@@ -1,13 +1,14 @@
 export class WebRTCClient {
   static instance = new WebRTCClient();
-  
+
   ws: WebSocket | null = null;
   rtc: RTCPeerConnection | null = null;
   controlChannel: RTCDataChannel | null = null;
-  
+  terminalChannel: RTCDataChannel | null = null;
+
   connected = false;
   pin: string | null = null;
-  
+
   // React Callbacks
   onChat: ((msg: any) => void) | null = null;
   onTerminal: ((log: string) => void) | null = null;
@@ -23,7 +24,7 @@ export class WebRTCClient {
 
     this.pin = pin;
     this.ws = new WebSocket(signalUrl);
-    
+
     this.ws.onopen = () => {
       this.ws?.send(JSON.stringify({ type: 'auth', role: 'client', pin }));
       this.setStatus('Authenticating...');
@@ -43,7 +44,7 @@ export class WebRTCClient {
 
   async handleOffer(sdp: string) {
     this.rtc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-    
+
     this.rtc.onicecandidate = (e) => {
       if (e.candidate && this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send(JSON.stringify({ type: 'ice', candidate: e.candidate.toJSON() }));
@@ -67,6 +68,7 @@ export class WebRTCClient {
           if (this.onChat) this.onChat(JSON.parse(e.data));
         };
       } else if (channel.label === 'terminal') {
+        this.terminalChannel = channel;
         channel.onmessage = (e) => {
           if (this.onTerminal) this.onTerminal(e.data);
         };
