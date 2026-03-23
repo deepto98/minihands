@@ -2,7 +2,6 @@ import { intro, outro, text, confirm, spinner, isCancel, cancel } from '@clack/p
 import picocolors from 'picocolors';
 import { startDaemon } from '../daemon/index.js';
 import { setConfig, getConfig } from '../db/config.js';
-import { execAsync } from '../daemon/webrtc.js'; // Can just run standard child_process here
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 
@@ -96,19 +95,14 @@ export async function runStartSequence() {
   }
 
   // Determine PIN
-  let pin = getConfig('static_pin');
+  let pin = getConfig('static_pin') as string;
   if (!pin) {
+    const s = spinner();
+    s.start('Generating ephemeral PIN...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
     pin = Math.floor(100000 + Math.random() * 900000).toString();
-    // We could save it here if we want a persisted random pin, 
-    // but ephemeral is fine until they set it via UI
+    s.stop(picocolors.green('Pairing PIN generated!'));
   }
-
-  
-  // Simulate PIN generation
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  const pin = Math.floor(100000 + Math.random() * 900000).toString();
-  
-  s.stop(picocolors.green('Pairing PIN generated!'));
 
   // Display pairing PIN beautifully
   console.log('\n┌─────────────────────────────┐');

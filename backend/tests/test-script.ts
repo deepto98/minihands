@@ -1,8 +1,6 @@
 import { generateText, tool } from 'ai';
 import { z } from 'zod';
 import { openai } from '@ai-sdk/openai';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const myTools = {
   executeTerminal: tool({
@@ -20,7 +18,7 @@ async function testZod() {
   console.log("Testing z.object without .describe()...");
   try {
     const res = await generateText({
-      model: openai('gpt-4o'),
+      model: openai('gpt-4o') as any,
       prompt: "Execute ls",
       tools: myTools,
     });
