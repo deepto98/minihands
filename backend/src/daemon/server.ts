@@ -19,10 +19,10 @@ export function startServer(pin: string): Promise<number> {
     const wss = new WebSocketServer({ server });
 
     // Serve static files from the compiled React UI
-    // In dev: ../../../web-ui/dist
-    // In prod: ../../../web-ui-dist
+    // In dev (from src/daemon): ../../../../web-ui/dist
+    // In prod (from dist/): web-ui
     const distPathDev = path.join(__dirname, '../../../../web-ui/dist');
-    const distPathProd = path.join(__dirname, '../../../../web-ui-dist'); // adjust based on final build structure
+    const distPathProd = path.join(__dirname, '../web-ui'); // When __dirname is dist, it points to dist/web-ui
 
     app.use(express.static(distPathDev));
     app.use(express.static(distPathProd));
