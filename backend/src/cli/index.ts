@@ -1,7 +1,7 @@
 import { intro, outro, text, confirm, spinner, isCancel, cancel } from '@clack/prompts';
 import picocolors from 'picocolors';
 import { startDaemon } from '../daemon/index.js';
-import { setConfig, getConfig } from '../db/config.js';
+import { setConfig, getConfig, initDB } from '../db/config.js';
 import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 
@@ -11,6 +11,7 @@ const execAsyncPromisified = promisify(exec);
  * Runs the interactive CLI prompt to initialize MiniHands.
  */
 export async function runInitPrompt() {
+  await initDB();
   intro(picocolors.inverse(' MiniHands Initialization '));
 
   // Prompt for API key
@@ -37,6 +38,7 @@ export async function runInitPrompt() {
  * Runs the setup prompt for cloudflared tunnel binding
  */
 export async function runSetupPrompt() {
+  await initDB();
   intro(picocolors.inverse(' MiniHands Cloudflare Setup '));
   
   console.log(picocolors.gray('Running cloudflared login...'));
@@ -88,6 +90,8 @@ export async function runSetupPrompt() {
  * The standard start sequence
  */
 export async function runStartSequence() {
+  await initDB();
+  
   const apiKey = getConfig('openai_api_key');
   if (!apiKey) {
     console.error(picocolors.red('API Key missing. Run "minihands init" first.'));

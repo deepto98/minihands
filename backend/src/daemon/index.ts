@@ -8,7 +8,7 @@ import { startWebRTC, sendChat } from './webrtc.js';
 import { checkOSDependencies } from './osHandler.js';
 import { startServer } from './server.js';
 import { checkCloudflaredInstalled, startEphemeralTunnel } from './tunnelManager.js';
-import { getConfig } from '../db/config.js';
+import { getConfig, initDB } from '../db/config.js';
 import path from 'path';
 
 /**
@@ -17,6 +17,8 @@ import path from 'path';
  */
 export async function startDaemon(pin: string) {
   console.log(picocolors.gray(`\n[Daemon] Starting background process... (PIN: ${pin})`));
+
+  await initDB();
 
   const apiKey = getConfig('openai_api_key');
   if (!apiKey) {
