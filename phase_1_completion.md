@@ -1,0 +1,24 @@
+# MiniHands Task List
+
+- [x] Project Initialization
+  - [x] Initialize Git repository
+  - [x] Initialize Node.js project & TypeScript configuration
+  - [x] Create basic CLI structure using `@clack/prompts`
+- [x] Core Daemon Tools
+  - [x] Implement FileSystem actions (read/write)
+  - [x] Implement Terminal execution (child_process)
+  - [x] Implement Native Screen/Mouse control (`@nut-tree/nut-js`)
+- [x] AI Orchestration
+  - [x] Setup LLM client with tools support
+  - [x] Implement Permission Interceptor (require manual approval for high-risk actions)
+  - [x] Implement OS-Level Graceful Native Validations ([osHandler.ts](file:///home/deepto/ML-2025/minihands/backend/src/daemon/osHandler.ts))
+- [x] WebRTC Cloud Signaling Server
+  - [x] Initialize `signaling-server` with WebSockets
+  - [x] Implement PIN-based room joining and SDP exchange
+- [x] Daemon WebRTC Layer (`werift`)
+  - [x] Setup `RTCPeerConnection` and connect to signaling
+  - [x] Create `control`, `terminal`, `chat`, and `screen_feed` DataChannels
+  - [x] Bridge `nut.js` screen capture directly to ArrayBuffer over `screen_feed`
+- [x] React UI WebRTC Integration
+  - [x] Implement Signaling client & Browser WebRTC P2P
+  - [x] Wire UI components to WebRTC Data Channels
