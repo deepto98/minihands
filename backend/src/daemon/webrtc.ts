@@ -9,7 +9,7 @@ import { readFile, unlink } from 'fs/promises';
 
 const execAsync = promisify(exec);
 
-const SIGNALING_SERVER_URL = process.env.SIGNALING_URL || 'ws://localhost:8080';
+const SIGNALING_SERVER_URL = process.env.SIGNALING_URL || 'ws://localhost:3000';
 let ws: WebSocket | null = null;
 let rtc: RTCPeerConnection | null = null;
 

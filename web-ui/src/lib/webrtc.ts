@@ -14,7 +14,12 @@ export class WebRTCClient {
   onScreenFrame: ((buffer: ArrayBuffer) => void) | null = null;
   onStatusChange: ((status: string) => void) | null = null;
 
-  async connect(pin: string, signalUrl = "ws://localhost:8080") {
+  async connect(pin: string, signalUrl?: string) {
+    if (!signalUrl) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      signalUrl = `${protocol}//${window.location.host}`;
+    }
+
     this.pin = pin;
     this.ws = new WebSocket(signalUrl);
     

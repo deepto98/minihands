@@ -6,11 +6,10 @@ import { openai } from '@ai-sdk/openai';
 import { systemTools } from './tools.js';
 import { startWebRTC, sendChat } from './webrtc.js';
 import { checkOSDependencies } from './osHandler.js';
-import dotenv from 'dotenv';
+import { startServer } from './server.js';
+import { checkCloudflaredInstalled, startEphemeralTunnel } from './tunnelManager.js';
+import { getConfig } from '../db/config.js';
 import path from 'path';
-
-// Load .env variables (specifically OPENAI_API_KEY)
-dotenv.config();
 
 /**
  * Starts the local MiniHands daemon.
@@ -19,13 +18,28 @@ dotenv.config();
 export async function startDaemon(pin: string) {
   console.log(picocolors.gray(`\n[Daemon] Starting background process... (PIN: ${pin})`));
 
-  if (!process.env.OPENAI_API_KEY) {
-    console.error(picocolors.red('[Daemon] ERROR: OPENAI_API_KEY is not set in .env'));
+  const apiKey = getConfig('openai_api_key');
+  if (!apiKey) {
+    console.error(picocolors.red('[Daemon] ERROR: OPENAI_API_KEY is not set in config. Run "minihands init".'));
     process.exit(1);
   }
 
   await checkOSDependencies();
+  await checkCloudflaredInstalled();
 
+  console.log(picocolors.yellow(`[Daemon] Starting local API & Signaling server...`));
+  const port = await startServer(pin);
+  
+  try {
+    const tunnelUrl = await startEphemeralTunnel(port);
+    console.log(picocolors.green(`\n=== MINIHANDS LIVE ===`));
+    console.log(`Open this URL on any device to connect: ${picocolors.cyan(tunnelUrl)}`);
+    console.log(`Pairing PIN: ${picocolors.bold(picocolors.green(pin))}`);
+    console.log(picocolors.green(`======================\n`));
+  } catch (err) {
+    console.warn(picocolors.yellow(`[Daemon] Proceeding with Local-Only access. (http://localhost:${port})`));
+  }
+  
   console.log(picocolors.yellow(`[Daemon] Entering WebRTC listener mode.`));
 
   await startWebRTC(pin, async (simulatedCommand: string) => {

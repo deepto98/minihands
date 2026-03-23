@@ -1,6 +1,5 @@
-// src/index.ts
 import { Command } from 'commander';
-import { runInitPrompt } from './cli/index.js';
+import { runInitPrompt, runSetupPrompt, runStartSequence } from './cli/index.js';
 import picocolors from 'picocolors';
 
 const program = new Command();
@@ -10,10 +9,9 @@ program
   .description('MiniHands: Secure, WebRTC-enabled local AI daemon')
   .version('1.0.0');
 
-// Register the 'init' command
 program
   .command('init')
-  .description('Initialize MiniHands and deploy the control plane')
+  .description('Initialize MiniHands configuration (API Keys)')
   .action(async () => {
     try {
       await runInitPrompt();
@@ -23,5 +21,29 @@ program
     }
   });
 
+program
+  .command('setup')
+  .description('Setup Cloudflare Zero Trust tunnel for a custom domain')
+  .action(async () => {
+    try {
+      await runSetupPrompt();
+    } catch (error) {
+       console.error(picocolors.red(`Setup failed: ${error}`));
+       process.exit(1);
+    }
+  });
+
+program
+  .command('start')
+  .description('Start the local daemon and UI server')
+  .action(async () => {
+    try {
+       await runStartSequence();
+    } catch (error) {
+       console.error(picocolors.red(`Daemon crash: ${error}`));
+       process.exit(1);
+    }
+  });
+
 // Parse terminal arguments
-program.parse(process.argv);
+program.parseAsync(process.argv);
