@@ -47,17 +47,25 @@ export async function startDaemon(pin: string) {
 
     try {
       const result = await generateText({
-        model: openai('gpt-4o'),
+        model: openai('gpt-4o') as any,
+        maxSteps: 10,
         tools: systemTools,
         prompt: `The user sent this remote command from the web UI: "${simulatedCommand}"`,
-        system: 'You are the MiniHands local execution agent. You have full access to the user\'s local file system and terminal. Use the provided tools to accomplish the task. Always summarize what you did concisely.',
+        system: `You are the MiniHands local execution agent. You have full access to the user's local file system and terminal. 
+Use the provided tools to accomplish the task. Always summarize what you did concisely.
+CRITICAL: If a tool execution is denied by the user, explain what happened and do NOT retry it. Find an alternative or stop.`,
+        onStepFinish: ({ text, toolCalls, toolResults }) => {
+          if (toolCalls && toolCalls.length > 0) {
+            const toolNames = toolCalls.map(t => t.toolName).join(', ');
+            console.log(picocolors.gray(`  -> Agent used tools: ${toolNames}`));
+            sendChat(JSON.stringify({ role: 'agent', text: `*[Executing] ${toolNames}...*` }));
+          }
+        }
       });
 
       console.log(picocolors.green(`\n[Agent]: ${result.text}\n`));
-      // Relay the response back to the Web UI DataChannel
+      // Relay the final response back to the Web UI DataChannel
       sendChat(JSON.stringify({ role: 'agent', text: result.text }));
-
-      // Print tooling metadata for observability
       const allToolCalls = result.steps?.flatMap(s => s.toolCalls) || [];
       if (allToolCalls.length > 0) {
         console.log(picocolors.gray(`  -> Tools used: ${allToolCalls.map(t => t.toolName).join(', ')}\n`));

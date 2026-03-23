@@ -6,8 +6,8 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { mouse, keyboard, screen, Point, straightTo, Button, Key } from '@nut-tree-fork/nut-js';
-import { confirm, isCancel } from '@clack/prompts';
 import picocolors from 'picocolors';
+import { requestPermission } from './permissionBridge.js';
 
 const execAsync = promisify(exec);
 
@@ -25,14 +25,15 @@ export const systemTools = {
 
       if (isDangerous) {
         console.log(''); // Newline for visual separation
-        const allowed = await confirm({
-          message: picocolors.red(`🚨 [Watchdog] Agent wants to execute high-risk command:\n"${command}"\nAllow?`),
-        });
+        console.log(picocolors.yellow(`[Watchdog] Suspending execution to request permission for:\n"${command}"`));
+        
+        const allowed = await requestPermission(command);
 
-        if (!allowed || isCancel(allowed)) {
-          console.log(picocolors.yellow('[Watchdog] Command blocked. Notifying agent...'));
-          return { success: false, error: 'User denied permission to run this command. Find an alternative approach or ask for clarification.' };
+        if (!allowed) {
+          console.log(picocolors.red('[Watchdog] Command blocked. Notifying agent...'));
+          return { success: false, error: 'User denied permission to run this command. Find an alternative approach or stop.' };
         }
+        console.log(picocolors.green('[Watchdog] Permission granted. Resuming execution.'));
       }
 
       try {

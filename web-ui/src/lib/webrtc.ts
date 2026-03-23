@@ -13,6 +13,7 @@ export class WebRTCClient {
   onTerminal: ((log: string) => void) | null = null;
   onScreenFrame: ((buffer: ArrayBuffer) => void) | null = null;
   onStatusChange: ((status: string) => void) | null = null;
+  onPermissionRequest: ((id: string, command: string) => void) | null = null;
 
   async connect(pin: string, signalUrl?: string) {
     if (!signalUrl) {
@@ -53,6 +54,14 @@ export class WebRTCClient {
       const channel = e.channel;
       if (channel.label === 'control') {
         this.controlChannel = channel;
+        channel.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            if (data.type === 'permission_request' && this.onPermissionRequest) {
+              this.onPermissionRequest(data.id, data.command);
+            }
+          } catch (err) { }
+        };
       } else if (channel.label === 'chat') {
         channel.onmessage = (e) => {
           if (this.onChat) this.onChat(JSON.parse(e.data));
@@ -84,6 +93,12 @@ export class WebRTCClient {
   sendCommand(command: string) {
     if (this.controlChannel?.readyState === 'open') {
       this.controlChannel.send(JSON.stringify({ type: 'command', command }));
+    }
+  }
+
+  sendPermissionResponse(id: string, approved: boolean) {
+    if (this.controlChannel?.readyState === 'open') {
+      this.controlChannel.send(JSON.stringify({ type: 'permission_response', id, approved }));
     }
   }
 

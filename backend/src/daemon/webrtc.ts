@@ -6,6 +6,7 @@ import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { readFile, unlink } from 'fs/promises';
+import { setControlSender, handlePermissionResponse } from './permissionBridge.js';
 
 const execAsync = promisify(exec);
 
@@ -79,6 +80,14 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
   screenFeedChannel = rtc.createDataChannel('screen_feed');
 
   // Set up listeners for control channel
+  controlChannel.onopen = () => {
+    setControlSender((msg: string) => {
+      if (controlChannel && controlChannel.readyState === 'open') {
+        controlChannel.send(msg);
+      }
+    });
+  };
+
   controlChannel.onMessage.subscribe((msg) => {
     const text = msg.toString();
     console.log('[WebRTC Control]', text);
@@ -86,6 +95,8 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
       const payload = JSON.parse(text);
       if (payload.type === 'command') {
         onCommandReceived(payload.command);
+      } else if (payload.type === 'permission_response') {
+        handlePermissionResponse(payload.id, payload.approved);
       }
       // Add emergency stop, mouse coords handlers later
     } catch (e) { /* ignore raw strings */ }

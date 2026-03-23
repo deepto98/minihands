@@ -3,6 +3,7 @@ import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Term
 import faviconImg from "/favicon.png";
 import { useNavigate } from "react-router-dom";
 import { WebRTCClient } from "../lib/webrtc";
+import { PermissionModal } from "../components/PermissionModal";
 
 type MobileTab = "chat" | "screen" | "terminal";
 type FocusPanel = "chat" | "screen" | "terminal" | null;
@@ -66,6 +67,7 @@ export default function Dashboard() {
   const [chatMessages, setChatMessages] = useState<{ role: string, text: string }[]>([]);
   const [terminalLines, setTerminalLines] = useState<{ text: string, color?: string }[]>([]);
   const [status, setStatus] = useState("Connecting...");
+  const [permissionPrompt, setPermissionPrompt] = useState<{id: string, command: string} | null>(null);
 
   useEffect(() => {
     const client = WebRTCClient.instance;
@@ -84,10 +86,15 @@ export default function Dashboard() {
       setTerminalLines(prev => [...prev, ...log.split('\n').map(l => ({ text: l, color: "text-zinc-300" }))]);
     };
 
+    client.onPermissionRequest = (id, command) => {
+      setPermissionPrompt({ id, command });
+    };
+
     return () => {
       client.onChat = null;
       client.onTerminal = null;
       client.onStatusChange = null;
+      client.onPermissionRequest = null;
     };
   }, [navigate]);
 
@@ -108,6 +115,16 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen">
+      <PermissionModal 
+        request={permissionPrompt} 
+        onResolve={(approved) => {
+          if (permissionPrompt) {
+            WebRTCClient.instance.sendPermissionResponse(permissionPrompt.id, approved);
+          }
+          setPermissionPrompt(null);
+        }} 
+      />
+
       {/* Top Header */}
       <header className="flex items-center justify-between px-3 md:px-6 py-2.5 md:py-3 border-b border-border bg-card shrink-0 gap-2">
         <div className="flex items-center gap-2 md:gap-3 min-w-0">
