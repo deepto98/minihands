@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal, ScreenShare, Maximize2, Minimize2 } from "lucide-react";
+import { Octagon, Paperclip, Send, Bot, UserCircle, Monitor, MessageSquare, Terminal as TerminalIcon, ScreenShare, Maximize2, Minimize2 } from "lucide-react";
 import faviconImg from "/favicon.png";
 import { useNavigate } from "react-router-dom";
 import { WebRTCClient } from "../lib/webrtc";
 import { PermissionModal } from "../components/PermissionModal";
+import { Terminal } from 'xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import 'xterm/css/xterm.css';
 
 type MobileTab = "chat" | "screen" | "terminal";
 type FocusPanel = "chat" | "screen" | "terminal" | null;
@@ -11,7 +14,7 @@ type FocusPanel = "chat" | "screen" | "terminal" | null;
 const panelMeta = [
   { key: "chat" as const, label: "Chat", icon: MessageSquare },
   { key: "screen" as const, label: "Screen", icon: ScreenShare },
-  { key: "terminal" as const, label: "Terminal", icon: Terminal },
+  { key: "terminal" as const, label: "Terminal", icon: TerminalIcon },
 ];
 
 function PanelMaxBtn({ panel, focusPanel, setFocusPanel }: { panel: FocusPanel; focusPanel: FocusPanel; setFocusPanel: (v: FocusPanel) => void }) {
@@ -65,7 +68,6 @@ export default function Dashboard() {
   
   // Live State
   const [chatMessages, setChatMessages] = useState<{ role: string, text: string }[]>([]);
-  const [terminalLines, setTerminalLines] = useState<{ text: string, color?: string }[]>([]);
   const [status, setStatus] = useState("Connecting...");
   const [permissionPrompt, setPermissionPrompt] = useState<{id: string, command: string} | null>(null);
 
@@ -80,10 +82,6 @@ export default function Dashboard() {
     
     client.onChat = (msg) => {
       setChatMessages(prev => [...prev, { role: msg.role, text: msg.text }]);
-    };
-    
-    client.onTerminal = (log) => {
-      setTerminalLines(prev => [...prev, ...log.split('\n').map(l => ({ text: l, color: "text-zinc-300" }))]);
     };
 
     client.onPermissionRequest = (id, command) => {
@@ -203,12 +201,12 @@ export default function Dashboard() {
               <div className={`flex flex-col min-h-0 ${showScreen && !focusPanel ? "flex-1 basis-1/2" : "flex-1"}`}>
                 <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card/50 shrink-0">
                   <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <Terminal className="h-3.5 w-3.5" />
+                    <TerminalIcon className="h-3.5 w-3.5" />
                     Terminal
                   </div>
                   <PanelMaxBtn panel="terminal" focusPanel={focusPanel} setFocusPanel={setFocusPanel} />
                 </div>
-                <TerminalPane lines={terminalLines} full />
+                <TerminalPane full />
               </div>
             )}
           </div>
@@ -224,7 +222,7 @@ export default function Dashboard() {
           </>
         )}
         {mobileTab === "screen" && <LiveScreen client={WebRTCClient.instance} full />}
-        {mobileTab === "terminal" && <TerminalPane lines={terminalLines} full />}
+        {mobileTab === "terminal" && <TerminalPane full />}
       </div>
     </div>
   );
@@ -416,23 +414,56 @@ function LiveScreen({ client, full }: { client: WebRTCClient, full?: boolean }) 
   );
 }
 
-function TerminalPane({ lines, full }: { lines: { text: string, color?: string }[]; full?: boolean }) {
+function TerminalPane({ full }: { full?: boolean }) {
+  const terminalRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!terminalRef.current) return;
+    
+    const client = WebRTCClient.instance;
+    const term = new Terminal({
+      theme: { background: '#000000', foreground: '#d4d4d8' },
+      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", Courier, monospace',
+      fontSize: 13,
+      cursorBlink: true,
+      convertEol: true
+    });
+    
+    const fitAddon = new FitAddon();
+    term.loadAddon(fitAddon);
+    term.open(terminalRef.current);
+    
+    const onResize = () => setTimeout(() => fitAddon.fit(), 50);
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(terminalRef.current);
+    onResize();
+
+    const onTerminalData = (log: string) => {
+      term.write(log);
+    };
+    
+    const onDataDisposable = term.onData((data) => {
+      client.sendTerminalInput(data);
+    });
+
+    client.onTerminal = onTerminalData;
+
+    return () => {
+      if (client.onTerminal === onTerminalData) {
+        client.onTerminal = null;
+      }
+      onDataDisposable.dispose();
+      resizeObserver.disconnect();
+      term.dispose();
+    };
+  }, []);
+
   return (
-    <div className={`${full ? "flex-1" : "h-1/2"} overflow-y-auto overflow-x-hidden break-words p-3 md:p-4 terminal-scrollbar`} style={{ background: "hsl(var(--terminal-bg))" }}>
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-red-400/70" />
-        <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-amber-400/70" />
-        <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-emerald-400/70" />
-        <span className="text-[10px] md:text-xs font-mono text-zinc-500 ml-2">daemon@local — bash</span>
+    <div className={`relative ${full ? "flex-1" : "h-1/2"} w-full bg-black overflow-hidden`}>
+      <div className="absolute top-0 right-0 p-2 z-10 flex items-center gap-2 pointer-events-none">
+        <span className="text-[10px] md:text-xs font-mono text-zinc-500 bg-black/60 px-2 py-0.5 rounded backdrop-blur">daemon@local — bash</span>
       </div>
-      <div className="space-y-0.5">
-        {lines.map((line, i) => (
-          <div key={i} className={`text-[10px] md:text-xs font-mono ${line.color || "text-zinc-300"} leading-5 whitespace-pre-wrap`}>
-            {line.text || "\u00A0"}
-          </div>
-        ))}
-        <div className="text-[10px] md:text-xs font-mono text-zinc-500 animate-pulse">▋</div>
-      </div>
+      <div className="w-full h-full p-2" ref={terminalRef} />
     </div>
   );
 }

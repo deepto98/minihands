@@ -102,6 +102,12 @@ export class WebRTCClient {
     }
   }
 
+  sendTerminalInput(data: string) {
+    if (this.terminalChannel?.readyState === 'open') {
+      this.terminalChannel.send(data);
+    }
+  }
+
   setStatus(status: string) {
     if (this.onStatusChange) this.onStatusChange(status);
   }

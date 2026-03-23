@@ -8,6 +8,7 @@ import { promisify } from 'util';
 import { readFile, unlink } from 'fs/promises';
 import { setControlSender, handlePermissionResponse } from './permissionBridge.js';
 import { mouse, keyboard, Point, Button, Key } from '@nut-tree-fork/nut-js';
+import { startPty, writePty, stopPty } from './ptyManager.js';
 
 const execAsync = promisify(exec);
 
@@ -25,12 +26,6 @@ let streaming = false;
 export function sendChat(message: string) {
   if (chatChannel && chatChannel.readyState === 'open') {
     chatChannel.send(message);
-  }
-}
-
-export function sendTerminal(log: string) {
-  if (terminalChannel && terminalChannel.readyState === 'open') {
-    terminalChannel.send(log);
   }
 }
 
@@ -79,6 +74,18 @@ async function setupWebRTCAndInitiateOffer(pin: string, onCommandReceived: (cmd:
   terminalChannel = rtc.createDataChannel('terminal');
   chatChannel = rtc.createDataChannel('chat');
   screenFeedChannel = rtc.createDataChannel('screen_feed');
+
+  terminalChannel.onopen = () => {
+    startPty((data) => {
+      if (terminalChannel && terminalChannel.readyState === 'open') {
+        terminalChannel.send(data);
+      }
+    });
+  };
+
+  terminalChannel.onMessage.subscribe((msg) => {
+    writePty(msg.toString());
+  });
 
   // Set up listeners for control channel
   controlChannel.onopen = () => {
@@ -189,6 +196,7 @@ async function startScreenStream(channel: RTCDataChannel) {
 
 function teardownWebRTC() {
   streaming = false;
+  stopPty();
   if (rtc) {
     rtc.close();
     rtc = null;
