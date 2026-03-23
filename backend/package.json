@@ -12,7 +12,7 @@
     "dev": "tsx src/index.ts",
     "build:ui": "cd ../web-ui && npm i && npm run build",
     "build:backend": "tsup",
-    "build": "npm run build:ui && npm run build:backend && cp -r ../web-ui/dist ./dist/web-ui"
+    "build": "npm run build:ui && npm run build:backend && rm -rf ./dist/web-ui && cp -r ../web-ui/dist ./dist/web-ui"
   },
   "keywords": [],
   "author": "",
