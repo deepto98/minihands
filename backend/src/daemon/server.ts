@@ -27,7 +27,8 @@ export function startServer(pin: string): Promise<number> {
     app.use(express.static(distPathDev));
     app.use(express.static(distPathProd));
 
-    app.get('*', (req, res) => {
+    // Catch-all fallback for React Router SPA
+    app.use((req, res) => {
       // Try dev path first, fallback to prod path
       res.sendFile(path.join(distPathDev, 'index.html'), (err) => {
         if (err) {
