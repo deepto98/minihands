@@ -16,7 +16,7 @@ export async function runInitPrompt() {
 
   // Prompt for API key
   const apiKey = await text({
-    message: 'Enter your OpenAI API Key (will be saved securely to .env):',
+    message: 'Enter your OpenAI API Key (will be saved securely to ~/.minihands/config.db):',
     placeholder: 'sk-proj-...',
     validate(value) {
       if (!value || value.length === 0) return 'API key is required!';
